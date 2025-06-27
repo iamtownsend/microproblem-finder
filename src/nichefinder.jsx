@@ -60,7 +60,7 @@ export default function NicheFinder() {
     }
     try {
       const res = await fetch(
-        `/subreddits/search.json?q=${encodeURIComponent(q)}&limit=100`
+        `/.netlify/functions/search-subs?q=${encodeURIComponent(q)}&limit=100`
       );
       const { data } = await res.json();
       const sfw = data.children
