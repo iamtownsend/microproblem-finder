@@ -1,0 +1,602 @@
+[
+    {
+        "subreddit": "excel",
+        "title": "Trouble trying to analyze workflow",
+        "score": 97,
+        "url": "https://www.reddit.com/r/excel/comments/349180"
+    },
+    {
+        "subreddit": "sysadmin",
+        "title": "What's the best way to share a report?",
+        "score": 6,
+        "url": "https://www.reddit.com/r/sysadmin/comments/672256"
+    },
+    {
+        "subreddit": "webdev",
+        "title": "Can't seem to fix the report correctly",
+        "score": 51,
+        "url": "https://www.reddit.com/r/webdev/comments/550616"
+    },
+    {
+        "subreddit": "webdev",
+        "title": "Need help to automate a email process",
+        "score": 99,
+        "url": "https://www.reddit.com/r/webdev/comments/848201"
+    },
+    {
+        "subreddit": "datascience",
+        "title": "What's the best way to connect a spreadsheet?",
+        "score": 69,
+        "url": "https://www.reddit.com/r/datascience/comments/938801"
+    },
+    {
+        "subreddit": "webdev",
+        "title": "How do I automate my email?",
+        "score": 31,
+        "url": "https://www.reddit.com/r/webdev/comments/167015"
+    },
+    {
+        "subreddit": "datascience",
+        "title": "What's the best way to fix a website?",
+        "score": 35,
+        "url": "https://www.reddit.com/r/datascience/comments/187844"
+    },
+    {
+        "subreddit": "datascience",
+        "title": "Need help to automate a spreadsheet process",
+        "score": 21,
+        "url": "https://www.reddit.com/r/datascience/comments/762132"
+    },
+    {
+        "subreddit": "techsupport",
+        "title": "What's the best way to fix a email?",
+        "score": 85,
+        "url": "https://www.reddit.com/r/techsupport/comments/484628"
+    },
+    {
+        "subreddit": "marketing",
+        "title": "How do I connect my spreadsheet?",
+        "score": 7,
+        "url": "https://www.reddit.com/r/marketing/comments/749157"
+    },
+    {
+        "subreddit": "excel",
+        "title": "Why won't my automate spreadsheet?",
+        "score": 50,
+        "url": "https://www.reddit.com/r/excel/comments/707522"
+    },
+    {
+        "subreddit": "smallbusiness",
+        "title": "Tips to optimize website more efficiently",
+        "score": 89,
+        "url": "https://www.reddit.com/r/smallbusiness/comments/830189"
+    },
+    {
+        "subreddit": "excel",
+        "title": "What's the best way to optimize a email?",
+        "score": 51,
+        "url": "https://www.reddit.com/r/excel/comments/720939"
+    },
+    {
+        "subreddit": "datascience",
+        "title": "Tips to share dashboard more efficiently",
+        "score": 52,
+        "url": "https://www.reddit.com/r/datascience/comments/177933"
+    },
+    {
+        "subreddit": "techsupport",
+        "title": "Can't seem to fix the spreadsheet correctly",
+        "score": 14,
+        "url": "https://www.reddit.com/r/techsupport/comments/864590"
+    },
+    {
+        "subreddit": "techsupport",
+        "title": "Why won't my share report?",
+        "score": 45,
+        "url": "https://www.reddit.com/r/techsupport/comments/279444"
+    },
+    {
+        "subreddit": "smallbusiness",
+        "title": "What's the best way to connect a workflow?",
+        "score": 30,
+        "url": "https://www.reddit.com/r/smallbusiness/comments/684706"
+    },
+    {
+        "subreddit": "smallbusiness",
+        "title": "Why won't my automate workflow?",
+        "score": 42,
+        "url": "https://www.reddit.com/r/smallbusiness/comments/142927"
+    },
+    {
+        "subreddit": "marketing",
+        "title": "Need help to share a workflow process",
+        "score": 36,
+        "url": "https://www.reddit.com/r/marketing/comments/656953"
+    },
+    {
+        "subreddit": "webdev",
+        "title": "Need help to connect a spreadsheet process",
+        "score": 50,
+        "url": "https://www.reddit.com/r/webdev/comments/781440"
+    },
+    {
+        "subreddit": "excel",
+        "title": "Need help to optimize a report process",
+        "score": 27,
+        "url": "https://www.reddit.com/r/excel/comments/996197"
+    },
+    {
+        "subreddit": "marketing",
+        "title": "How do I automate my report?",
+        "score": 16,
+        "url": "https://www.reddit.com/r/marketing/comments/707723"
+    },
+    {
+        "subreddit": "marketing",
+        "title": "What's the best way to share a website?",
+        "score": 22,
+        "url": "https://www.reddit.com/r/marketing/comments/164338"
+    },
+    {
+        "subreddit": "smallbusiness",
+        "title": "Can't seem to connect the report correctly",
+        "score": 9,
+        "url": "https://www.reddit.com/r/smallbusiness/comments/605720"
+    },
+    {
+        "subreddit": "webdev",
+        "title": "What's the best way to analyze a workflow?",
+        "score": 83,
+        "url": "https://www.reddit.com/r/webdev/comments/691428"
+    },
+    {
+        "subreddit": "marketing",
+        "title": "Trouble trying to automate workflow",
+        "score": 17,
+        "url": "https://www.reddit.com/r/marketing/comments/293005"
+    },
+    {
+        "subreddit": "marketing",
+        "title": "Need help to analyze a spreadsheet process",
+        "score": 34,
+        "url": "https://www.reddit.com/r/marketing/comments/610527"
+    },
+    {
+        "subreddit": "smallbusiness",
+        "title": "Trouble trying to connect spreadsheet",
+        "score": 5,
+        "url": "https://www.reddit.com/r/smallbusiness/comments/217089"
+    },
+    {
+        "subreddit": "marketing",
+        "title": "Tips to connect spreadsheet more efficiently",
+        "score": 22,
+        "url": "https://www.reddit.com/r/marketing/comments/918998"
+    },
+    {
+        "subreddit": "webdev",
+        "title": "How do I fix my spreadsheet?",
+        "score": 58,
+        "url": "https://www.reddit.com/r/webdev/comments/705720"
+    },
+    {
+        "subreddit": "excel",
+        "title": "Why won't my automate dashboard?",
+        "score": 86,
+        "url": "https://www.reddit.com/r/excel/comments/174451"
+    },
+    {
+        "subreddit": "marketing",
+        "title": "Can't seem to optimize the email correctly",
+        "score": 59,
+        "url": "https://www.reddit.com/r/marketing/comments/322560"
+    },
+    {
+        "subreddit": "techsupport",
+        "title": "Why won't my optimize spreadsheet?",
+        "score": 5,
+        "url": "https://www.reddit.com/r/techsupport/comments/453368"
+    },
+    {
+        "subreddit": "excel",
+        "title": "Tips to optimize workflow more efficiently",
+        "score": 80,
+        "url": "https://www.reddit.com/r/excel/comments/644247"
+    },
+    {
+        "subreddit": "smallbusiness",
+        "title": "Need help to optimize a report process",
+        "score": 19,
+        "url": "https://www.reddit.com/r/smallbusiness/comments/197942"
+    },
+    {
+        "subreddit": "excel",
+        "title": "Trouble trying to share report",
+        "score": 60,
+        "url": "https://www.reddit.com/r/excel/comments/111899"
+    },
+    {
+        "subreddit": "smallbusiness",
+        "title": "Tips to fix workflow more efficiently",
+        "score": 16,
+        "url": "https://www.reddit.com/r/smallbusiness/comments/210246"
+    },
+    {
+        "subreddit": "sysadmin",
+        "title": "How do I share my dashboard?",
+        "score": 88,
+        "url": "https://www.reddit.com/r/sysadmin/comments/197931"
+    },
+    {
+        "subreddit": "techsupport",
+        "title": "How do I optimize my report?",
+        "score": 67,
+        "url": "https://www.reddit.com/r/techsupport/comments/218782"
+    },
+    {
+        "subreddit": "datascience",
+        "title": "Tips to fix spreadsheet more efficiently",
+        "score": 66,
+        "url": "https://www.reddit.com/r/datascience/comments/239222"
+    },
+    {
+        "subreddit": "webdev",
+        "title": "Trouble trying to automate spreadsheet",
+        "score": 31,
+        "url": "https://www.reddit.com/r/webdev/comments/628511"
+    },
+    {
+        "subreddit": "smallbusiness",
+        "title": "Trouble trying to fix dashboard",
+        "score": 49,
+        "url": "https://www.reddit.com/r/smallbusiness/comments/465073"
+    },
+    {
+        "subreddit": "webdev",
+        "title": "Trouble trying to share report",
+        "score": 66,
+        "url": "https://www.reddit.com/r/webdev/comments/720322"
+    },
+    {
+        "subreddit": "techsupport",
+        "title": "Trouble trying to share dashboard",
+        "score": 53,
+        "url": "https://www.reddit.com/r/techsupport/comments/157853"
+    },
+    {
+        "subreddit": "techsupport",
+        "title": "Trouble trying to analyze website",
+        "score": 5,
+        "url": "https://www.reddit.com/r/techsupport/comments/665394"
+    },
+    {
+        "subreddit": "smallbusiness",
+        "title": "Can't seem to share the dashboard correctly",
+        "score": 85,
+        "url": "https://www.reddit.com/r/smallbusiness/comments/225122"
+    },
+    {
+        "subreddit": "datascience",
+        "title": "Can't seem to automate the dashboard correctly",
+        "score": 72,
+        "url": "https://www.reddit.com/r/datascience/comments/515730"
+    },
+    {
+        "subreddit": "datascience",
+        "title": "What's the best way to automate a website?",
+        "score": 65,
+        "url": "https://www.reddit.com/r/datascience/comments/599033"
+    },
+    {
+        "subreddit": "sysadmin",
+        "title": "Can't seem to connect the report correctly",
+        "score": 82,
+        "url": "https://www.reddit.com/r/sysadmin/comments/734439"
+    },
+    {
+        "subreddit": "webdev",
+        "title": "Need help to share a website process",
+        "score": 27,
+        "url": "https://www.reddit.com/r/webdev/comments/714485"
+    },
+    {
+        "subreddit": "marketing",
+        "title": "Why won't my connect workflow?",
+        "score": 11,
+        "url": "https://www.reddit.com/r/marketing/comments/809518"
+    },
+    {
+        "subreddit": "sysadmin",
+        "title": "How do I optimize my report?",
+        "score": 69,
+        "url": "https://www.reddit.com/r/sysadmin/comments/171775"
+    },
+    {
+        "subreddit": "sysadmin",
+        "title": "Trouble trying to fix website",
+        "score": 63,
+        "url": "https://www.reddit.com/r/sysadmin/comments/726902"
+    },
+    {
+        "subreddit": "smallbusiness",
+        "title": "How do I connect my report?",
+        "score": 10,
+        "url": "https://www.reddit.com/r/smallbusiness/comments/789024"
+    },
+    {
+        "subreddit": "datascience",
+        "title": "Tips to share dashboard more efficiently",
+        "score": 59,
+        "url": "https://www.reddit.com/r/datascience/comments/733098"
+    },
+    {
+        "subreddit": "datascience",
+        "title": "Tips to connect report more efficiently",
+        "score": 90,
+        "url": "https://www.reddit.com/r/datascience/comments/670820"
+    },
+    {
+        "subreddit": "webdev",
+        "title": "Need help to share a email process",
+        "score": 28,
+        "url": "https://www.reddit.com/r/webdev/comments/469066"
+    },
+    {
+        "subreddit": "excel",
+        "title": "How do I fix my spreadsheet?",
+        "score": 21,
+        "url": "https://www.reddit.com/r/excel/comments/410941"
+    },
+    {
+        "subreddit": "marketing",
+        "title": "How do I analyze my website?",
+        "score": 41,
+        "url": "https://www.reddit.com/r/marketing/comments/693006"
+    },
+    {
+        "subreddit": "techsupport",
+        "title": "How do I optimize my spreadsheet?",
+        "score": 34,
+        "url": "https://www.reddit.com/r/techsupport/comments/147106"
+    },
+    {
+        "subreddit": "techsupport",
+        "title": "Trouble trying to share dashboard",
+        "score": 64,
+        "url": "https://www.reddit.com/r/techsupport/comments/866534"
+    },
+    {
+        "subreddit": "webdev",
+        "title": "How do I fix my workflow?",
+        "score": 80,
+        "url": "https://www.reddit.com/r/webdev/comments/752343"
+    },
+    {
+        "subreddit": "excel",
+        "title": "Trouble trying to optimize spreadsheet",
+        "score": 61,
+        "url": "https://www.reddit.com/r/excel/comments/860216"
+    },
+    {
+        "subreddit": "sysadmin",
+        "title": "Need help to fix a email process",
+        "score": 92,
+        "url": "https://www.reddit.com/r/sysadmin/comments/309207"
+    },
+    {
+        "subreddit": "smallbusiness",
+        "title": "Can't seem to connect the spreadsheet correctly",
+        "score": 41,
+        "url": "https://www.reddit.com/r/smallbusiness/comments/597736"
+    },
+    {
+        "subreddit": "excel",
+        "title": "Trouble trying to fix website",
+        "score": 57,
+        "url": "https://www.reddit.com/r/excel/comments/259199"
+    },
+    {
+        "subreddit": "datascience",
+        "title": "How do I optimize my dashboard?",
+        "score": 99,
+        "url": "https://www.reddit.com/r/datascience/comments/669043"
+    },
+    {
+        "subreddit": "excel",
+        "title": "Trouble trying to automate website",
+        "score": 14,
+        "url": "https://www.reddit.com/r/excel/comments/279663"
+    },
+    {
+        "subreddit": "datascience",
+        "title": "What's the best way to share a website?",
+        "score": 93,
+        "url": "https://www.reddit.com/r/datascience/comments/775416"
+    },
+    {
+        "subreddit": "sysadmin",
+        "title": "Trouble trying to automate report",
+        "score": 75,
+        "url": "https://www.reddit.com/r/sysadmin/comments/240479"
+    },
+    {
+        "subreddit": "marketing",
+        "title": "Can't seem to analyze the report correctly",
+        "score": 5,
+        "url": "https://www.reddit.com/r/marketing/comments/589291"
+    },
+    {
+        "subreddit": "sysadmin",
+        "title": "What's the best way to automate a email?",
+        "score": 17,
+        "url": "https://www.reddit.com/r/sysadmin/comments/395004"
+    },
+    {
+        "subreddit": "webdev",
+        "title": "Trouble trying to fix workflow",
+        "score": 14,
+        "url": "https://www.reddit.com/r/webdev/comments/225579"
+    },
+    {
+        "subreddit": "datascience",
+        "title": "How do I automate my spreadsheet?",
+        "score": 93,
+        "url": "https://www.reddit.com/r/datascience/comments/493947"
+    },
+    {
+        "subreddit": "sysadmin",
+        "title": "Why won't my connect spreadsheet?",
+        "score": 97,
+        "url": "https://www.reddit.com/r/sysadmin/comments/334780"
+    },
+    {
+        "subreddit": "webdev",
+        "title": "What's the best way to optimize a spreadsheet?",
+        "score": 81,
+        "url": "https://www.reddit.com/r/webdev/comments/596128"
+    },
+    {
+        "subreddit": "techsupport",
+        "title": "Need help to share a website process",
+        "score": 99,
+        "url": "https://www.reddit.com/r/techsupport/comments/354297"
+    },
+    {
+        "subreddit": "smallbusiness",
+        "title": "Can't seem to automate the workflow correctly",
+        "score": 98,
+        "url": "https://www.reddit.com/r/smallbusiness/comments/271223"
+    },
+    {
+        "subreddit": "techsupport",
+        "title": "How do I optimize my dashboard?",
+        "score": 25,
+        "url": "https://www.reddit.com/r/techsupport/comments/671706"
+    },
+    {
+        "subreddit": "excel",
+        "title": "Can't seem to connect the website correctly",
+        "score": 14,
+        "url": "https://www.reddit.com/r/excel/comments/534287"
+    },
+    {
+        "subreddit": "marketing",
+        "title": "What's the best way to fix a report?",
+        "score": 20,
+        "url": "https://www.reddit.com/r/marketing/comments/628021"
+    },
+    {
+        "subreddit": "techsupport",
+        "title": "Why won't my share email?",
+        "score": 14,
+        "url": "https://www.reddit.com/r/techsupport/comments/507373"
+    },
+    {
+        "subreddit": "webdev",
+        "title": "Tips to optimize report more efficiently",
+        "score": 40,
+        "url": "https://www.reddit.com/r/webdev/comments/654275"
+    },
+    {
+        "subreddit": "sysadmin",
+        "title": "What's the best way to connect a website?",
+        "score": 38,
+        "url": "https://www.reddit.com/r/sysadmin/comments/458298"
+    },
+    {
+        "subreddit": "excel",
+        "title": "Trouble trying to share spreadsheet",
+        "score": 57,
+        "url": "https://www.reddit.com/r/excel/comments/506194"
+    },
+    {
+        "subreddit": "excel",
+        "title": "How do I automate my email?",
+        "score": 12,
+        "url": "https://www.reddit.com/r/excel/comments/661322"
+    },
+    {
+        "subreddit": "techsupport",
+        "title": "Why won't my optimize workflow?",
+        "score": 5,
+        "url": "https://www.reddit.com/r/techsupport/comments/905966"
+    },
+    {
+        "subreddit": "sysadmin",
+        "title": "What's the best way to optimize a workflow?",
+        "score": 63,
+        "url": "https://www.reddit.com/r/sysadmin/comments/601744"
+    },
+    {
+        "subreddit": "marketing",
+        "title": "Need help to connect a dashboard process",
+        "score": 57,
+        "url": "https://www.reddit.com/r/marketing/comments/395742"
+    },
+    {
+        "subreddit": "webdev",
+        "title": "What's the best way to automate a dashboard?",
+        "score": 85,
+        "url": "https://www.reddit.com/r/webdev/comments/107313"
+    },
+    {
+        "subreddit": "smallbusiness",
+        "title": "Tips to analyze workflow more efficiently",
+        "score": 89,
+        "url": "https://www.reddit.com/r/smallbusiness/comments/889183"
+    },
+    {
+        "subreddit": "smallbusiness",
+        "title": "Trouble trying to optimize website",
+        "score": 37,
+        "url": "https://www.reddit.com/r/smallbusiness/comments/315830"
+    },
+    {
+        "subreddit": "smallbusiness",
+        "title": "What's the best way to optimize a report?",
+        "score": 32,
+        "url": "https://www.reddit.com/r/smallbusiness/comments/251164"
+    },
+    {
+        "subreddit": "webdev",
+        "title": "Can't seem to share the workflow correctly",
+        "score": 98,
+        "url": "https://www.reddit.com/r/webdev/comments/861889"
+    },
+    {
+        "subreddit": "techsupport",
+        "title": "What's the best way to analyze a email?",
+        "score": 44,
+        "url": "https://www.reddit.com/r/techsupport/comments/636918"
+    },
+    {
+        "subreddit": "webdev",
+        "title": "Can't seem to optimize the workflow correctly",
+        "score": 59,
+        "url": "https://www.reddit.com/r/webdev/comments/248199"
+    },
+    {
+        "subreddit": "webdev",
+        "title": "Trouble trying to fix email",
+        "score": 5,
+        "url": "https://www.reddit.com/r/webdev/comments/614955"
+    },
+    {
+        "subreddit": "marketing",
+        "title": "Trouble trying to automate dashboard",
+        "score": 52,
+        "url": "https://www.reddit.com/r/marketing/comments/693092"
+    },
+    {
+        "subreddit": "excel",
+        "title": "Can't seem to automate the dashboard correctly",
+        "score": 6,
+        "url": "https://www.reddit.com/r/excel/comments/580214"
+    },
+    {
+        "subreddit": "sysadmin",
+        "title": "Trouble trying to optimize email",
+        "score": 89,
+        "url": "https://www.reddit.com/r/sysadmin/comments/998403"
+    }
+]

@@ -1,0 +1,11 @@
+[
+  {
+    "name": "AskReddit",
+    "title": "Ask Reddit...",
+    "description": "r/AskReddit is the place to ask and answer thought-provoking questions.",
+    "subscribers": 39000000,
+    "over18": false,
+    "lang": "en"
+  },
+  ...
+]
