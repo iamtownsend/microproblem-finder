@@ -1,17 +1,15 @@
 // netlify/functions/search-subs.js
 
-// If you need fetch in Node <18, install node-fetch. On Netlify Node 18+ you can use the global fetch.
-const fetch = global.fetch || require("node-fetch");
-
 exports.handler = async function (event, context) {
   const { q = "", limit = "100" } = event.queryStringParameters || {};
 
-  // Query Reddit’s public API
+  // Build the Reddit API URL
   const url = `https://www.reddit.com/subreddits/search.json?q=${encodeURIComponent(
     q
   )}&limit=${limit}`;
 
   try {
+    // Use the global fetch (available in Netlify Node18+)
     const res = await fetch(url);
     const data = await res.json();
 
