@@ -246,3 +246,12 @@ select,                /* ← dropdowns too! */
   margin-top: 0.5rem;
 }
 .pagination button { cursor: pointer; }
+button:disabled, button.btn[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.info-message {
+  margin: 0.5rem 0;
+  font-size: 0.9rem;
+  color: #666;
+}

@@ -1,0 +1,9 @@
+[dev]
+  # where Netlify Dev itself listens
+  port = 8888
+
+  # where your CRA start script runs
+  targetPort = 3000
+
+  # (adjust if you’ve renamed your functions dir)
+  functions = "netlify/functions"

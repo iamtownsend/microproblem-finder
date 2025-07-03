@@ -2,7 +2,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
 import { phrasePatterns } from "./data/phrasePatterns";
-import { starterSubreddits } from "./data/starterSubreddits";
 import "./App.css";
 
 const SUGGESTION_PAGE_SIZE = 6 * 2;  // two rows of 6 each
@@ -16,40 +15,32 @@ const ToggleSwitch = ({ enabled, onToggle, label }) => (
       animate={{ backgroundColor: enabled ? "#4caf50" : "#ccc" }}
       transition={{ type: "spring", stiffness: 500, damping: 30 }}
     >
-      <motion.div
-        className="toggle-thumb"
-        layout
-        style={{ x: enabled ? 26 : 0 }}
-      />
+      <motion.div className="toggle-thumb" layout style={{ x: enabled ? 26 : 0 }} />
     </motion.div>
     <span className="toggle-label">{label}</span>
   </div>
 );
 
 export default function NicheFinder() {
-  // 1️⃣ Search & Subs
+  // ── State Hooks ────────────────────────────────────────────────────────
   const [topic, setTopic] = useState("");
   const [suggestedSubs, setSuggestedSubs] = useState([]);
-
-  // 1.5️⃣ Subs Pagination
   const [suggestionPage, setSuggestionPage] = useState(0);
 
-  // 2️⃣ Tracked & Sort
   const [trackedSubs, setTrackedSubs] = useState([]);
   const [selectedSorts, setSelectedSorts] = useState(["top"]);
   const [useSuggestedSubs, setUseSuggestedSubs] = useState(false);
 
-  // 3️⃣ Title Filters
   const [keyword, setKeyword] = useState("");
-  const [patternChoice, setPatternChoice] = useState("all");
+  const [patternChoice, setPatternChoice] = useState("none");
 
-  // 4️⃣ Posts, Loading & Pagination
   const [rawPosts, setRawPosts] = useState([]);
   const [filteredPosts, setFilteredPosts] = useState([]);
   const [loadingPosts, setLoadingPosts] = useState(false);
   const [resultPage, setResultPage] = useState(0);
+  const [error, setError] = useState(null);
 
-  // ── Fetch Subreddits (public API + CRA proxy for dev) ───────────────
+  // ── Fetch Subreddits ───────────────────────────────────────────────────
   const fetchSubreddits = useCallback(async (q) => {
     if (!q.trim()) {
       setSuggestedSubs([]);
@@ -60,72 +51,74 @@ export default function NicheFinder() {
         `/.netlify/functions/search-subs?q=${encodeURIComponent(q)}&limit=100`
       );
       const { data } = await res.json();
-      const sfw = data.children
-        .map((c) => ({
-          name: c.data.display_name,
-          over18: c.data.over18,
-        }))
-        .filter((s) => !s.over18);
-      setSuggestedSubs(sfw);
+      setSuggestedSubs(
+        data.children
+          .map((c) => ({ name: c.data.display_name, over18: c.data.over18 }))
+          .filter((s) => !s.over18)
+      );
     } catch {
       setSuggestedSubs([]);
     }
   }, []);
 
-  // debounce the subreddit search
   useEffect(() => {
     const t = setTimeout(() => fetchSubreddits(topic), 300);
     return () => clearTimeout(t);
   }, [topic, fetchSubreddits]);
 
-  // reset suggestion page when list changes
   useEffect(() => {
     setSuggestionPage(0);
   }, [suggestedSubs]);
 
-  // ── Add / Remove Subs ────────────────────────────────────────────────
+  // ── Add / Remove Subs ─────────────────────────────────────────────────
   const addSub = (name) => {
     const lower = name.toLowerCase();
     if (!trackedSubs.includes(lower)) {
-      setTrackedSubs((p) => [...p, lower]);
+      setTrackedSubs((prev) => [...prev, lower]);
     }
   };
   const removeSub = (name) => {
-    setTrackedSubs((p) => p.filter((s) => s !== name));
+    setTrackedSubs((prev) => prev.filter((s) => s !== name));
   };
 
-  // ── Sort toggle (exactly one) ─────────────────────────────────────────
-  const toggleSort = (type) => {
-    setSelectedSorts([type]);
-  };
+  // ── Sort toggle ────────────────────────────────────────────────────────
+  const toggleSort = (type) => setSelectedSorts([type]);
 
-  // ── Fetch posts helper ───────────────────────────────────────────────
+   // ── Fetch posts helper ────────────────────────────────────────────────
   const fetchFor = useCallback(async (sub, sort) => {
     try {
+      // always hit your Netlify function, both in dev and in prod
       const res = await fetch(
-        `https://www.reddit.com/r/${sub}/${sort}.json?limit=50&t=all`
+        `/.netlify/functions/search-posts?` +
+          `sub=${encodeURIComponent(sub)}` +
+          `&sort=${encodeURIComponent(sort)}` +
+          `&t=all` +
+          `&limit=50`
       );
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const { data } = await res.json();
       return data.children.map((c) => ({
         subreddit: c.data.subreddit.toLowerCase(),
         title: c.data.title,
         score: c.data.score,
         url: `https://reddit.com${c.data.permalink}`,
-        sort,
       }));
     } catch {
       return [];
     }
   }, []);
 
-  // ── Execute the search ───────────────────────────────────────────────
-  const handleSearch = useCallback(async () => {
+
+  // ── Execute search & error handling ───────────────────────────────────
+    const handleSearch = useCallback(async () => {
+    setError(null);
     setLoadingPosts(true);
+
     const subs = useSuggestedSubs
       ? Array.from(
           new Set([
             ...trackedSubs,
-            ...starterSubreddits.map((s) => s.toLowerCase()),
+            ...suggestedSubs.map((s) => s.name.toLowerCase()),
           ])
         )
       : trackedSubs;
@@ -136,17 +129,27 @@ export default function NicheFinder() {
       return;
     }
 
-    let all = [];
-    for (let sub of subs) {
-      for (let sort of selectedSorts) {
-        all = all.concat(await fetchFor(sub, sort));
+    try {
+      let all = [];
+      for (let sub of subs) {
+        for (let sort of selectedSorts) {
+          const posts = await fetchFor(sub, sort);
+          all = all.concat(posts);
+        }
       }
+      // dedupe by URL
+      const seen = new Map();
+      all.forEach((p) => seen.set(p.url, p));
+      setRawPosts(Array.from(seen.values()));
+    } catch (e) {
+      console.error("handleSearch error:", e);
+      setError("There was an error fetching posts. Please try again.");
+    } finally {
+      setLoadingPosts(false);
     }
-    setRawPosts(all);
-    setLoadingPosts(false);
-  }, [trackedSubs, selectedSorts, useSuggestedSubs, fetchFor]);
+  }, [trackedSubs, suggestedSubs, useSuggestedSubs, selectedSorts, fetchFor]);
 
-  // auto-search when sort or suggested toggle changes
+  // auto-search when sort or toggle changes
   useEffect(() => {
     if (trackedSubs.length || useSuggestedSubs) handleSearch();
   }, [selectedSorts, useSuggestedSubs, trackedSubs, handleSearch]);
@@ -154,35 +157,30 @@ export default function NicheFinder() {
   // ── Filter, Sort & Reset posts ───────────────────────────────────────
   useEffect(() => {
     let posts = [...rawPosts];
-    if (keyword.trim()) {
-      const kw = keyword.toLowerCase();
-      posts = posts.filter((p) => p.title.toLowerCase().includes(kw));
+    const kw = keyword.trim().toLowerCase();
+
+    if (patternChoice === "none") {
+      if (kw) {
+        posts = posts.filter((p) => p.title.toLowerCase().includes(kw));
+      }
+    } else {
+      posts = posts.filter((p) => {
+        const t = p.title.toLowerCase();
+        const matchesPattern = phrasePatterns.some((txt) =>
+          new RegExp(`\\b${txt.replace(/ /g, "\\s+")}\\b`, "i").test(p.title)
+        );
+        return (!kw || t.includes(kw)) && matchesPattern;
+      });
     }
-    if (patternChoice === "all") {
-      posts = posts.filter((p) =>
-        phrasePatterns.some((txt) =>
-          new RegExp(`\\b${txt.replace(/ /g, "\\s+")}\\b`, "i").test(
-            p.title
-          )
-        )
-      );
-    } else if (patternChoice !== "none") {
-      posts = posts.filter((p) =>
-        new RegExp(
-          `\\b${patternChoice.replace(/ /g, "\\s+")}\\b`,
-          "i"
-        ).test(p.title)
-      );
-    }
-    // sort by descending flame count
+
     posts.sort((a, b) => b.score - a.score);
     setFilteredPosts(posts);
     setResultPage(0);
   }, [rawPosts, keyword, patternChoice]);
 
-  // ── Suggestions: filter tracked out, then paginate ─────────────────
-  const untracked = suggestedSubs.filter((s) =>
-    !trackedSubs.includes(s.name.toLowerCase())
+  // ── Suggestions pagination ────────────────────────────────────────────
+  const untracked = suggestedSubs.filter(
+    (s) => !trackedSubs.includes(s.name.toLowerCase())
   );
   const suggestionPageCount = Math.ceil(
     untracked.length / SUGGESTION_PAGE_SIZE
@@ -192,41 +190,47 @@ export default function NicheFinder() {
     suggestionPage * SUGGESTION_PAGE_SIZE + SUGGESTION_PAGE_SIZE
   );
 
-  // ── Paginate posts ───────────────────────────────────────────────────
+  // ── Results pagination ────────────────────────────────────────────────
   const resultPageCount = Math.ceil(filteredPosts.length / POSTS_PER_PAGE);
   const pageResults = filteredPosts.slice(
     resultPage * POSTS_PER_PAGE,
     resultPage * POSTS_PER_PAGE + POSTS_PER_PAGE
   );
 
-  // ── Reset everything ─────────────────────────────────────────────────
+  // ── Reset everything ──────────────────────────────────────────────────
   const handleReset = () => {
     setTopic("");
     setSuggestedSubs([]);
     setTrackedSubs([]);
     setSelectedSorts(["top"]);
     setKeyword("");
-    setPatternChoice("all");
+    setPatternChoice("none");
     setRawPosts([]);
     setFilteredPosts([]);
     setUseSuggestedSubs(false);
     setLoadingPosts(false);
     setSuggestionPage(0);
     setResultPage(0);
+    setError(null);
   };
 
   return (
     <div className="App">
-      {/* Spinner */}
+      {/* Spinner + patience note */}
       {loadingPosts && (
         <div className="spinner-overlay">
           <div className="spinner" />
+          {patternChoice === "all" && (
+            <div className="loading-message">
+              Selecting “All patterns” will take a bit longer. Please be patient…
+            </div>
+          )}
         </div>
       )}
 
       <h1>MicroProblem Finder</h1>
 
-      {/* Search */}
+      {/* Search subs */}
       <input
         value={topic}
         onChange={(e) => setTopic(e.target.value)}
@@ -234,7 +238,7 @@ export default function NicheFinder() {
         className="filter-input"
       />
 
-      {/* Suggestions Grid & Pagination */}
+      {/* Suggestions + pagination */}
       {visibleSuggestions.length > 0 && (
         <LayoutGroup>
           <ul className="suggestions">
@@ -275,7 +279,7 @@ export default function NicheFinder() {
         </LayoutGroup>
       )}
 
-      {/* Tracked Chips */}
+      {/* Tracked chips */}
       <div className="chips">
         <AnimatePresence>
           {trackedSubs.map((s) => (
@@ -324,11 +328,6 @@ export default function NicheFinder() {
         >
           <option value="none">No pattern</option>
           <option value="all">All patterns</option>
-          {phrasePatterns.map((txt) => (
-            <option key={txt} value={txt}>
-              {txt}
-            </option>
-          ))}
         </select>
         <ToggleSwitch
           enabled={useSuggestedSubs}
@@ -344,6 +343,7 @@ export default function NicheFinder() {
           className="btn"
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
+          disabled={trackedSubs.length === 0 && !useSuggestedSubs}
         >
           Search Posts
         </motion.button>
@@ -357,17 +357,12 @@ export default function NicheFinder() {
         </motion.button>
       </div>
 
+      {/* Error */}
+      {error && <div className="error-message">{error}</div>}
+
       {/* Results & Pagination */}
       <div className="results-section">
-        {loadingPosts ? (
-          <div className="skeleton-container">
-            {Array(5)
-              .fill(0)
-              .map((_, i) => (
-                <div key={i} className="skeleton-card" />
-              ))}
-          </div>
-        ) : (
+        {!loadingPosts && (
           <>
             <motion.ul
               className="results"

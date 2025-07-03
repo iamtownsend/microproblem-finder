@@ -2,7 +2,7 @@
   "name": "reddit-niche-ui",
   "version": "0.1.0",
   "private": true,
-  "proxy": "https://www.reddit.com",
+  "proxy": "http://localhost:8888",
   "dependencies": {
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.6.3",
@@ -21,6 +21,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
+    "netlify:dev": "netlify dev",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
@@ -42,5 +43,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "netlify-cli": "^22.2.1"
   }
 }
