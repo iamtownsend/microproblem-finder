@@ -2,8 +2,8 @@
 
 const fetch = require("node-fetch");
 
-exports.handler = async function(event, context) {
-  // CORS pre-flight
+exports.handler = async (event, context) => {
+  // allow browser preflight
   if (event.httpMethod === "OPTIONS") {
     return {
       statusCode: 204,
@@ -15,55 +15,59 @@ exports.handler = async function(event, context) {
     };
   }
 
-  // grab & validate
-  const {
-    sub = "",
-    sort = "top",
-    t = "all",
-    limit = "50",
-  } = event.queryStringParameters || {};
+  const { sub = "", sort = "top", t = "all", limit = "50", q = "" } =
+    event.queryStringParameters || {};
 
-  if (!sub.trim()) {
+  if (!sub.trim() || !q.trim()) {
     return {
       statusCode: 400,
       headers: { "Access-Control-Allow-Origin": "*" },
-      body: JSON.stringify({ error: "`sub` is required" }),
+      body: JSON.stringify({ error: "`sub` and `q` parameters are required" }),
     };
   }
 
-  // build a listing URL instead of search
+  // build Reddit search URL
   const redditUrl =
-    `https://www.reddit.com/r/${encodeURIComponent(sub)}/${encodeURIComponent(sort)}.json` +
-    `?t=${encodeURIComponent(t)}` +
-    `&limit=${encodeURIComponent(limit)}`;
+    `https://www.reddit.com/r/${encodeURIComponent(sub)}/search.json` +
+    `?restrict_sr=true` +
+    `&sort=${encodeURIComponent(sort)}` +
+    `&t=${encodeURIComponent(t)}` +
+    `&limit=${encodeURIComponent(limit)}` +
+    `&q=${encodeURIComponent(q)}`;
 
   try {
-    console.log("🔍 [search-posts] fetching listing:", redditUrl);
+    console.log("🔍 [search-posts] fetching:", redditUrl);
+
     const res = await fetch(redditUrl, {
       headers: {
+        // must supply a real User-Agent
         "User-Agent": "NetlifyFunction/1.0 reddit-niche-ui",
+        Accept: "application/json",
       },
     });
 
     const text = await res.text();
-
     if (!res.ok) {
-      console.error(`❌ [search-posts] reddit returned ${res.status}`);
+      console.error(
+        `❌ [search-posts] reddit returned ${res.status}`,
+        text.slice(0, 200)
+      );
       return {
         statusCode: res.status,
         headers: { "Access-Control-Allow-Origin": "*" },
         body: JSON.stringify({
           error: `Reddit returned ${res.status}`,
-          detail: text.slice(0,300),
+          detail: text.slice(0, 200),
         }),
       };
     }
 
+    // parse JSON
     let json;
     try {
       json = JSON.parse(text);
-    } catch (err) {
-      console.error("❌ JSON parse error", err);
+    } catch (parseErr) {
+      console.error("❌ [search-posts] JSON parse error:", parseErr);
       return {
         statusCode: 502,
         headers: { "Access-Control-Allow-Origin": "*" },
@@ -77,7 +81,7 @@ exports.handler = async function(event, context) {
       body: JSON.stringify(json),
     };
   } catch (err) {
-    console.error("🔥 unexpected error:", err);
+    console.error("🔥 [search-posts] unexpected error:", err);
     return {
       statusCode: 500,
       headers: { "Access-Control-Allow-Origin": "*" },
