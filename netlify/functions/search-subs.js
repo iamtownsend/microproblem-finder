@@ -1,8 +1,8 @@
 // netlify/functions/search-subs.js
 const fetch = require("node-fetch");
 
-exports.handler = async (event) => {
-  // Allow preflight
+exports.handler = async (event, context) => {
+  // CORS preflight
   if (event.httpMethod === "OPTIONS") {
     return {
       statusCode: 204,
@@ -24,47 +24,31 @@ exports.handler = async (event) => {
   }
 
   const redditURL =
-    `https://www.reddit.com/subreddits/search.json` +
+    `https://old.reddit.com/subreddits/search.json` +
     `?q=${encodeURIComponent(q)}` +
-    `&limit=${encodeURIComponent(limit)}`;
+    `&limit=${encodeURIComponent(limit)}` +
+    `&raw_json=1`;
 
   try {
     console.log("🔍 [search-subs] fetching:", redditURL);
-
     const res = await fetch(redditURL, {
       headers: {
         "User-Agent": "NetlifyFunction/1.0 reddit-niche-ui",
+        Accept: "application/json",
       },
     });
-
     const text = await res.text();
+
     if (!res.ok) {
-      console.error("❌ [search-subs]", res.status, text.slice(0, 500));
+      console.error(`❌ [search-subs] reddit returned ${res.status}`, text.slice(0, 200));
       return {
         statusCode: res.status,
         headers: { "Access-Control-Allow-Origin": "*" },
-        body: JSON.stringify({
-          error: `Reddit API returned ${res.status}`,
-          detail: text.slice(0, 500),
-        }),
+        body: JSON.stringify({ error: `Reddit API returned ${res.status}` }),
       };
     }
 
-    let data;
-    try {
-      data = JSON.parse(text);
-    } catch (parseErr) {
-      console.error("❌ [search-subs] JSON parse error:", parseErr);
-      return {
-        statusCode: 502,
-        headers: { "Access-Control-Allow-Origin": "*" },
-        body: JSON.stringify({
-          error: "Invalid JSON from Reddit",
-          detail: text.slice(0, 500),
-        }),
-      };
-    }
-
+    const data = JSON.parse(text);
     return {
       statusCode: 200,
       headers: { "Access-Control-Allow-Origin": "*" },
