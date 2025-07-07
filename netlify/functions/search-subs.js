@@ -30,12 +30,13 @@ exports.handler = async (event, context) => {
     `&raw_json=1`;
 
   try {
-    console.log("🔍 [search-subs] fetching:", redditURL);
+    console.log(" [search-subs] fetching:", redditURL);
     const res = await fetch(redditURL, {
       headers: {
         "User-Agent": "NetlifyFunction/1.0 reddit-niche-ui",
-        Accept: "application/json",
-      },
+        Accept:       "application/json",
+        Referer:      "https://www.reddit.com",
+    },
     });
     const text = await res.text();
 
