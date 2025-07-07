@@ -1,90 +1,68 @@
 // netlify/functions/search-posts.js
-
 const fetch = require("node-fetch");
 
-exports.handler = async (event, context) => {
-  // allow browser preflight
-  if (event.httpMethod === "OPTIONS") {
-    return {
-      statusCode: 204,
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Headers": "Content-Type",
-        "Access-Control-Allow-Methods": "GET,OPTIONS",
-      },
-    };
-  }
+exports.handler = async function(event, context) {
+  const {
+    sub,
+    sort = "top",
+    t = "all",
+    limit = "50",
+    q = ""
+  } = event.queryStringParameters || {};
 
-  const { sub = "", sort = "top", t = "all", limit = "50", q = "" } =
-    event.queryStringParameters || {};
-
-  if (!sub.trim() || !q.trim()) {
+  // sub is required
+  if (!sub) {
     return {
       statusCode: 400,
-      headers: { "Access-Control-Allow-Origin": "*" },
-      body: JSON.stringify({ error: "`sub` and `q` parameters are required" }),
+      body: JSON.stringify({ error: "`sub` parameter is required" }),
     };
   }
 
-  // build Reddit search URL
-  const redditUrl =
-    `https://www.reddit.com/r/${encodeURIComponent(sub)}/search.json` +
-    `?restrict_sr=true` +
-    `&sort=${encodeURIComponent(sort)}` +
-    `&t=${encodeURIComponent(t)}` +
-    `&limit=${encodeURIComponent(limit)}` +
-    `&q=${encodeURIComponent(q)}`;
+  // Build the Reddit URL depending on whether we're searching or just listing
+  let redditUrl;
+  if (q.trim()) {
+    // search within the subreddit
+    redditUrl = 
+      `https://www.reddit.com/r/${encodeURIComponent(sub)}/search.json` +
+      `?restrict_sr=true` +
+      `&sort=${encodeURIComponent(sort)}` +
+      `&t=${encodeURIComponent(t)}` +
+      `&limit=${encodeURIComponent(limit)}` +
+      `&q=${encodeURIComponent(q)}`;
+  } else {
+    // just pull the subreddit listing
+    redditUrl =
+      `https://www.reddit.com/r/${encodeURIComponent(sub)}/${encodeURIComponent(sort)}.json` +
+      `?limit=${encodeURIComponent(limit)}` +
+      `&t=${encodeURIComponent(t)}`;
+  }
 
   try {
-    console.log("🔍 [search-posts] fetching:", redditUrl);
-
+    console.log(`🔍 [search-posts] fetching: ${redditUrl}`);
     const res = await fetch(redditUrl, {
       headers: {
-        // must supply a real User-Agent
+        // supply a real UA
         "User-Agent": "NetlifyFunction/1.0 reddit-niche-ui",
-        Accept: "application/json",
+        "Accept": "application/json",
       },
     });
 
-    const text = await res.text();
+    // bubble up any HTTP errors
     if (!res.ok) {
-      console.error(
-        `❌ [search-posts] reddit returned ${res.status}`,
-        text.slice(0, 200)
-      );
-      return {
-        statusCode: res.status,
-        headers: { "Access-Control-Allow-Origin": "*" },
-        body: JSON.stringify({
-          error: `Reddit returned ${res.status}`,
-          detail: text.slice(0, 200),
-        }),
-      };
+      throw new Error(`Reddit returned ${res.status}`);
     }
 
-    // parse JSON
-    let json;
-    try {
-      json = JSON.parse(text);
-    } catch (parseErr) {
-      console.error("❌ [search-posts] JSON parse error:", parseErr);
-      return {
-        statusCode: 502,
-        headers: { "Access-Control-Allow-Origin": "*" },
-        body: JSON.stringify({ error: "Invalid JSON from Reddit" }),
-      };
-    }
-
+    const json = await res.json();
     return {
       statusCode: 200,
-      headers: { "Access-Control-Allow-Origin": "*" },
       body: JSON.stringify(json),
     };
   } catch (err) {
-    console.error("🔥 [search-posts] unexpected error:", err);
+    console.error("🔥 [search-posts] error:", err);
     return {
-      statusCode: 500,
-      headers: { "Access-Control-Allow-Origin": "*" },
+      statusCode: err.message.startsWith("Reddit returned")
+        ? 502
+        : 500,
       body: JSON.stringify({ error: err.message }),
     };
   }
