@@ -27,12 +27,13 @@ exports.handler = async (event, context) => {
   }
 
   const redditUrl =
-    `https://www.reddit.com/r/${encodeURIComponent(sub)}/search.json` +
+    `https://old.reddit.com/r/${encodeURIComponent(sub)}/search.json` +
     `?restrict_sr=true` +
     `&sort=${encodeURIComponent(sort)}` +
     `&t=${encodeURIComponent(t)}` +
     `&limit=${encodeURIComponent(limit)}` +
-    `&q=${encodeURIComponent(q)}`;
+    `&q=${encodeURIComponent(q)}`+
+    `&raw_json=1`;
 
   try {
     console.log("🔍 [search-posts] fetching:", redditUrl);
