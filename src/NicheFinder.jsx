@@ -84,17 +84,19 @@ export default function NicheFinder() {
   // ── Sort toggle ────────────────────────────────────────────────────────
   const toggleSort = (type) => setSelectedSorts([type]);
 
-   // ── Fetch posts helper ────────────────────────────────────────────────
+// ── Fetch posts helper ────────────────────────────────────────────────
   const fetchFor = useCallback(async (sub, sort) => {
     try {
-      // always hit your Netlify function, both in dev and in prod
-      const res = await fetch(
+      // build & log the Netlify function URL
+      const url =
         `/.netlify/functions/search-posts?` +
-          `sub=${encodeURIComponent(sub)}` +
-          `&sort=${encodeURIComponent(sort)}` +
-          `&t=all` +
-          `&limit=50`
-      );
+        `sub=${encodeURIComponent(sub)}` +
+        `&sort=${encodeURIComponent(sort)}` +
+        `&t=all` +
+        `&limit=50`;
+      console.log("🔗 fetchFor URL:", url);
+
+      const res = await fetch(url);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const { data } = await res.json();
       return data.children.map((c) => ({
