@@ -161,11 +161,11 @@ export default function NicheFinder() {
   ]);
 
   // auto-search when sort, subs, or toggle changes
-  useEffect(() => {
-    if (trackedSubs.length || useSuggestedSubs) {
-      handleSearch();
-    }
-  }, [selectedSorts, useSuggestedSubs, trackedSubs, handleSearch]);
+ // useEffect(() => {
+//    if (trackedSubs.length || useSuggestedSubs) {
+ //     handleSearch();
+//    }
+//  }, [selectedSorts, useSuggestedSubs, trackedSubs, handleSearch]);
 
   // ── Filter, Sort & Reset posts ───────────────────────────────────────
   useEffect(() => {
