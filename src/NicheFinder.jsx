@@ -94,7 +94,7 @@ export default function NicheFinder() {
         `&sort=${encodeURIComponent(sort)}` +
         `&t=all` +
         `&limit=50`;
-        `&q=` // <-- empty q so we never hit the 400
+        
       console.log("🔗 fetchFor URL:", url);
 
       const res = await fetch(url);
