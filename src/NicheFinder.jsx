@@ -77,18 +77,16 @@ export default function NicheFinder() {
       setTrackedSubs((prev) => [...prev, lower]);
     }
   };
-  const removeSub = (name) => {
+  const removeSub = (name) =>
     setTrackedSubs((prev) => prev.filter((s) => s !== name));
-  };
 
   // ── Sort toggle ────────────────────────────────────────────────────────
   const toggleSort = (type) => setSelectedSorts([type]);
 
-// ── Fetch posts helper ────────────────────────────────────────────────
-// now takes `sub`, `sort`, AND the search query `q`
+  // ── Fetch posts helper ────────────────────────────────────────────────
+  // now takes `sub`, `sort` AND a search-query `q`
   const fetchFor = useCallback(async (sub, sort, q) => {
     try {
-      // build & log the Netlify function URL
       const url =
         `/.netlify/functions/search-posts?` +
         `sub=${encodeURIComponent(sub)}` +
@@ -96,7 +94,7 @@ export default function NicheFinder() {
         `&q=${encodeURIComponent(q)}` +
         `&t=all` +
         `&limit=50`;
-        
+
       console.log("🔗 fetchFor URL:", url);
 
       const res = await fetch(url);
@@ -104,21 +102,21 @@ export default function NicheFinder() {
       const { data } = await res.json();
       return data.children.map((c) => ({
         subreddit: c.data.subreddit.toLowerCase(),
-        title: c.data.title,
-        score: c.data.score,
-        url: `https://reddit.com${c.data.permalink}`,
+        title:     c.data.title,
+        score:     c.data.score,
+        url:       `https://reddit.com${c.data.permalink}`,
       }));
     } catch {
       return [];
     }
   }, []);
 
-
   // ── Execute search & error handling ───────────────────────────────────
-    const handleSearch = useCallback(async () => {
+  const handleSearch = useCallback(async () => {
     setError(null);
     setLoadingPosts(true);
 
+    // pick subs to search
     const subs = useSuggestedSubs
       ? Array.from(
           new Set([
@@ -138,7 +136,8 @@ export default function NicheFinder() {
       let all = [];
       for (let sub of subs) {
         for (let sort of selectedSorts) {
-          const posts = await fetchFor(sub, sort);
+          // pass `keyword` as the q-param
+          const posts = await fetchFor(sub, sort, keyword);
           all = all.concat(posts);
         }
       }
@@ -152,11 +151,20 @@ export default function NicheFinder() {
     } finally {
       setLoadingPosts(false);
     }
-  }, [trackedSubs, suggestedSubs, useSuggestedSubs, selectedSorts, fetchFor]);
+  }, [
+    trackedSubs,
+    suggestedSubs,
+    useSuggestedSubs,
+    selectedSorts,
+    fetchFor,
+    keyword,           // <-- ensure keyword is in deps
+  ]);
 
-  // auto-search when sort or toggle changes
+  // auto-search when sort, subs, or toggle changes
   useEffect(() => {
-    if (trackedSubs.length || useSuggestedSubs) handleSearch();
+    if (trackedSubs.length || useSuggestedSubs) {
+      handleSearch();
+    }
   }, [selectedSorts, useSuggestedSubs, trackedSubs, handleSearch]);
 
   // ── Filter, Sort & Reset posts ───────────────────────────────────────
@@ -221,7 +229,6 @@ export default function NicheFinder() {
 
   return (
     <div className="App">
-      {/* Spinner + patience note */}
       {loadingPosts && (
         <div className="spinner-overlay">
           <div className="spinner" />
@@ -235,7 +242,7 @@ export default function NicheFinder() {
 
       <h1>MicroProblem Finder</h1>
 
-      {/* Search subs */}
+      {/* Subreddit search */}
       <input
         value={topic}
         onChange={(e) => setTopic(e.target.value)}
@@ -243,183 +250,9 @@ export default function NicheFinder() {
         className="filter-input"
       />
 
-      {/* Suggestions + pagination */}
+      {/* Suggestions */}
       {visibleSuggestions.length > 0 && (
         <LayoutGroup>
           <ul className="suggestions">
             <AnimatePresence>
-              {visibleSuggestions.map((s) => (
-                <motion.li
-                  key={s.name}
-                  layoutId={`sub-${s.name}`}
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.2 }}
-                  className="suggestion"
-                  onClick={() => addSub(s.name)}
-                >
-                  {s.name}
-                </motion.li>
-              ))}
-            </AnimatePresence>
-          </ul>
-          <div className="pagination">
-            <button
-              disabled={suggestionPage === 0}
-              onClick={() => setSuggestionPage((p) => p - 1)}
-            >
-              Prev
-            </button>
-            <span>
-              Page {suggestionPage + 1} of {suggestionPageCount || 1}
-            </span>
-            <button
-              disabled={suggestionPage + 1 >= suggestionPageCount}
-              onClick={() => setSuggestionPage((p) => p + 1)}
-            >
-              Next
-            </button>
-          </div>
-        </LayoutGroup>
-      )}
-
-      {/* Tracked chips */}
-      <div className="chips">
-        <AnimatePresence>
-          {trackedSubs.map((s) => (
-            <motion.span
-              key={s}
-              layoutId={`sub-${s}`}
-              className="chip"
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              exit={{ scale: 0 }}
-              transition={{ type: "spring", stiffness: 500, damping: 30 }}
-              onClick={() => removeSub(s)}
-            >
-              {s} ×
-            </motion.span>
-          ))}
-        </AnimatePresence>
-      </div>
-
-      {/* Sort */}
-      <div className="sorts">
-        {["hot", "new", "top"].map((type) => (
-          <motion.button
-            key={type}
-            className={selectedSorts.includes(type) ? "on" : ""}
-            onClick={() => toggleSort(type)}
-            whileHover={{ scale: 1.1 }}
-          >
-            {type}
-          </motion.button>
-        ))}
-      </div>
-
-      {/* Filters & Toggle */}
-      <div className="filters">
-        <input
-          value={keyword}
-          onChange={(e) => setKeyword(e.target.value)}
-          placeholder="Filter titles…"
-          className="filter-input short"
-        />
-        <select
-          value={patternChoice}
-          onChange={(e) => setPatternChoice(e.target.value)}
-          className="filter-select"
-        >
-          <option value="none">No pattern</option>
-          <option value="all">All patterns</option>
-        </select>
-        <ToggleSwitch
-          enabled={useSuggestedSubs}
-          onToggle={() => setUseSuggestedSubs((p) => !p)}
-          label="Include suggested subs"
-        />
-      </div>
-
-      {/* Actions */}
-      <div className="actions">
-        <motion.button
-          onClick={handleSearch}
-          className="btn"
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-          disabled={trackedSubs.length === 0 && !useSuggestedSubs}
-        >
-          Search Posts
-        </motion.button>
-        <motion.button
-          onClick={handleReset}
-          className="btn-secondary"
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.9 }}
-        >
-          Reset
-        </motion.button>
-      </div>
-
-      {/* Error */}
-      {error && <div className="error-message">{error}</div>}
-
-      {/* Results & Pagination */}
-      <div className="results-section">
-        {!loadingPosts && (
-          <>
-            <motion.ul
-              className="results"
-              initial="hidden"
-              animate="visible"
-              variants={{ visible: { transition: { staggerChildren: 0.1 } } }}
-            >
-              {pageResults.map((p) => (
-                <motion.li
-                  key={p.url}
-                  className="card"
-                  variants={{
-                    hidden: { opacity: 0, x: -20 },
-                    visible: { opacity: 1, x: 0 },
-                  }}
-                >
-                  <a href={p.url} target="_blank" rel="noopener noreferrer">
-                    {p.title}
-                  </a>
-                  <motion.span
-                    key={`${p.url}-${p.score}`}
-                    className="score"
-                    initial={{ scale: 1 }}
-                    animate={{ scale: [1, 1.5, 1] }}
-                    transition={{ duration: 0.6, ease: "easeInOut" }}
-                    whileHover={{ scale: 1.2 }}
-                  >
-                    🔥 {p.score}
-                  </motion.span>
-                </motion.li>
-              ))}
-            </motion.ul>
-            <div className="pagination">
-              <button
-                disabled={resultPage === 0}
-                onClick={() => setResultPage((p) => p - 1)}
-              >
-                Prev
-              </button>
-              <span>
-                Page {resultPage + 1} of {resultPageCount || 1}
-              </span>
-              <button
-                disabled={resultPage + 1 >= resultPageCount}
-                onClick={() => setResultPage((p) => p + 1)}
-              >
-                Next
-              </button>
-            </div>
-          </>
-        )}
-      </div>
-    </div>
-  );
-}
+              {visibleSuggestions.m
