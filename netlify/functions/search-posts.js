@@ -2,46 +2,11 @@
 
 const fetch = require("node-fetch");
 
-let _token = null;
-let _tokenExpiresAt = 0;
+const CLIENT_ID     = process.env.REDDIT_CLIENT_ID;
+const CLIENT_SECRET = process.env.REDDIT_CLIENT_SECRET;
 
-// Fetch a fresh OAuth token if needed
-async function getToken() {
-  const now = Date.now();
-  if (_token && now < _tokenExpiresAt) {
-    return _token;
-  }
-
-  const id = process.env.REDDIT_CLIENT_ID;
-  const secret = process.env.REDDIT_CLIENT_SECRET;
-  if (!id || !secret) {
-    throw new Error("Missing Reddit OAuth credentials");
-  }
-
-  const creds = Buffer.from(`${id}:${secret}`).toString("base64");
-  const resp = await fetch("https://www.reddit.com/api/v1/access_token", {
-    method: "POST",
-    headers: {
-      "Authorization": `Basic ${creds}`,
-      "Content-Type": "application/x-www-form-urlencoded"
-    },
-    body: "grant_type=client_credentials"
-  });
-
-  if (!resp.ok) {
-    const txt = await resp.text();
-    throw new Error(`Token fetch failed ${resp.status}: ${txt}`);
-  }
-
-  const { access_token, expires_in } = await resp.json();
-  _token = access_token;
-  // Subtract a small buffer so we never use an expired token
-  _tokenExpiresAt = now + (expires_in * 1000) - 10_000;
-  return _token;
-}
-
-exports.handler = async function(event) {
-  // Allow CORS preflight
+exports.handler = async (event, context) => {
+  // Allow preflight
   if (event.httpMethod === "OPTIONS") {
     return {
       statusCode: 204,
@@ -53,9 +18,10 @@ exports.handler = async function(event) {
     };
   }
 
-  const { sub, sort = "top", t = "all", limit = "25", q } = event.queryStringParameters || {};
+  const { sub, sort = "top", t = "all", limit = "50", q = "" } =
+    event.queryStringParameters || {};
 
-  if (!sub || !q) {
+  if (!sub.trim() || !q.trim()) {
     return {
       statusCode: 400,
       headers: { "Access-Control-Allow-Origin": "*" },
@@ -63,52 +29,63 @@ exports.handler = async function(event) {
     };
   }
 
-  let token;
+  // 1) fetch OAuth2 token
+  const basic = Buffer.from(`${CLIENT_ID}:${CLIENT_SECRET}`).toString("base64");
+  let tokenJson;
   try {
-    token = await getToken();
+    const tokenRes = await fetch("https://www.reddit.com/api/v1/access_token", {
+      method: "POST",
+      headers: {
+        "Authorization": `Basic ${basic}`,
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: "grant_type=client_credentials",
+    });
+    if (!tokenRes.ok) throw new Error(`Token fetch failed ${tokenRes.status}`);
+    tokenJson = await tokenRes.json();
   } catch (err) {
+    console.error("🔥 [search-posts] token error:", err);
     return {
-      statusCode: 500,
+      statusCode: 502,
       headers: { "Access-Control-Allow-Origin": "*" },
-      body: JSON.stringify({ error: `OAuth failure: ${err.message}` }),
+      body: JSON.stringify({ error: "Failed to fetch Reddit token" }),
     };
   }
 
-  const url =
+  const accessToken = tokenJson.access_token;
+
+  // 2) perform the search
+  const searchUrl =
     `https://oauth.reddit.com/r/${encodeURIComponent(sub)}/search.json` +
-    `?restrict_sr=true` +
-    `&sort=${encodeURIComponent(sort)}` +
+    `?restrict_sr=true&sort=${encodeURIComponent(sort)}` +
     `&t=${encodeURIComponent(t)}` +
     `&limit=${encodeURIComponent(limit)}` +
     `&q=${encodeURIComponent(q)}`;
 
   try {
-    const res = await fetch(url, {
+    const res = await fetch(searchUrl, {
       headers: {
-        "Authorization": `Bearer ${token}`,
-        "User-Agent": "NetlifyFunction/1.0 reddit-niche-ui"
-      }
+        "Authorization": `Bearer ${accessToken}`,
+        "User-Agent":    "NetlifyFunction/1.0 reddit-niche-ui",
+      },
     });
-
     const text = await res.text();
     if (!res.ok) {
+      console.error(`❌ [search-posts] reddit returned ${res.status}`, text.slice(0,500));
       return {
         statusCode: res.status,
         headers: { "Access-Control-Allow-Origin": "*" },
-        body: JSON.stringify({
-          error: `Reddit returned ${res.status}`,
-          detail: text.slice(0, 500)
-        }),
+        body: JSON.stringify({ error: `Reddit returned ${res.status}`, detail: text.slice(0,500) }),
       };
     }
-
+    const json = JSON.parse(text);
     return {
       statusCode: 200,
       headers: { "Access-Control-Allow-Origin": "*" },
-      body: text, // already JSON
+      body: JSON.stringify(json),
     };
-
   } catch (err) {
+    console.error("🔥 [search-posts] unexpected error:", err);
     return {
       statusCode: 500,
       headers: { "Access-Control-Allow-Origin": "*" },
