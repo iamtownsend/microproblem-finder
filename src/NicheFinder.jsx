@@ -255,4 +255,177 @@ export default function NicheFinder() {
         <LayoutGroup>
           <ul className="suggestions">
             <AnimatePresence>
-              {visibleSuggestions.m
+              {visibleSuggestions.map((s) => (
+                <motion.li
+                  key={s.name}
+                  layoutId={`sub-${s.name}`}
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2 }}
+                  className="suggestion"
+                  onClick={() => addSub(s.name)}
+                >
+                  {s.name}
+                </motion.li>
+              ))}
+            </AnimatePresence>
+          </ul>
+          <div className="pagination">
+            <button
+              disabled={suggestionPage === 0}
+              onClick={() => setSuggestionPage((p) => p - 1)}
+            >
+              Prev
+            </button>
+            <span>
+              Page {suggestionPage + 1} of {suggestionPageCount || 1}
+            </span>
+            <button
+              disabled={suggestionPage + 1 >= suggestionPageCount}
+              onClick={() => setSuggestionPage((p) => p + 1)}
+            >
+              Next
+            </button>
+          </div>
+        </LayoutGroup>
+      )}
+
+      {/* Tracked subs */}
+      <div className="chips">
+        <AnimatePresence>
+          {trackedSubs.map((s) => (
+            <motion.span
+              key={s}
+              layoutId={`sub-${s}`}
+              className="chip"
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0 }}
+              transition={{ type: "spring", stiffness: 500, damping: 30 }}
+              onClick={() => removeSub(s)}
+            >
+              {s} ×
+            </motion.span>
+          ))}
+        </AnimatePresence>
+      </div>
+
+      {/* Sort */}
+      <div className="sorts">
+        {["hot", "new", "top"].map((type) => (
+          <motion.button
+            key={type}
+            className={selectedSorts.includes(type) ? "on" : ""}
+            onClick={() => toggleSort(type)}
+            whileHover={{ scale: 1.1 }}
+          >
+            {type}
+          </motion.button>
+        ))}
+      </div>
+
+      {/* Filters & Toggle */}
+      <div className="filters">
+        <input
+          value={keyword}
+          onChange={(e) => setKeyword(e.target.value)}
+          placeholder="Filter titles…"
+          className="filter-input short"
+        />
+        <select
+          value={patternChoice}
+          onChange={(e) => setPatternChoice(e.target.value)}
+          className="filter-select"
+        >
+          <option value="none">No pattern</option>
+          <option value="all">All patterns</option>
+        </select>
+        <ToggleSwitch
+          enabled={useSuggestedSubs}
+          onToggle={() => setUseSuggestedSubs((p) => !p)}
+          label="Include suggested subs"
+        />
+      </div>
+
+      {/* Actions */}
+      <div className="actions">
+        <motion.button
+          onClick={handleSearch}
+          className="btn"
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+          disabled={trackedSubs.length === 0 && !useSuggestedSubs}
+        >
+          Search Posts
+        </motion.button>
+        <motion.button
+          onClick={handleReset}
+          className="btn-secondary"
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.9 }}
+        >
+          Reset
+        </motion.button>
+      </div>
+
+      {error && <div className="error-message">{error}</div>}
+
+      {/* Results */}
+      <div className="results-section">
+        {!loadingPosts && (
+          <>
+            <motion.ul
+              className="results"
+              initial="hidden"
+              animate="visible"
+              variants={{ visible: { transition: { staggerChildren: 0.1 } } }}
+            >
+              {pageResults.map((p) => (
+                <motion.li
+                  key={p.url}
+                  className="card"
+                  variants={{
+                    hidden: { opacity: 0, x: -20 },
+                    visible: { opacity: 1, x: 0 },
+                  }}
+                >
+                  <a href={p.url} target="_blank" rel="noopener noreferrer">
+                    {p.title}
+                  </a>
+                  <motion.span
+                    key={`${p.url}-${p.score}`}
+                    className="score"
+                    initial={{ scale: 1 }}
+                    animate={{ scale: [1, 1.5, 1] }}
+                    transition={{ duration: 0.6, ease: "easeInOut" }}
+                    whileHover={{ scale: 1.2 }}
+                  >
+                    🔥 {p.score}
+                  </motion.span>
+                </motion.li>
+              ))}
+            </motion.ul>
+            <div className="pagination">
+              <button
+                disabled={resultPage === 0}
+                onClick={() => setResultPage((p) => p - 1)}
+              >
+                Prev
+              </button>
+              <span>
+                Page {resultPage + 1} of {resultPageCount || 1}
+              </span>
+              <button
+                disabled={resultPage + 1 >= resultPageCount}
+                onClick={() => setResultPage((p) => p + 1)}
+              >
+                Next
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
