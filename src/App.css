@@ -255,3 +255,13 @@ button:disabled, button.btn[disabled] {
   font-size: 0.9rem;
   color: #666;
 }
+/* at the top of src/App.css */
+.poc-banner {
+  background: #f0f8ff;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #ccc;
+  text-align: center;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  color: #333;
+}

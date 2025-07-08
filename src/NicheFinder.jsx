@@ -120,7 +120,7 @@ export default function NicheFinder() {
     }
     setError(null);
     setLoadingPosts(true);
-    
+
     // pick subs to search
     const subs = useSuggestedSubs
       ? Array.from(
@@ -244,8 +244,12 @@ export default function NicheFinder() {
           )}
         </div>
       )}
-
-      <h1>MicroProblem Finder</h1>
+<div className="poc-banner">
+  <strong> MicroProblem Finder (Light Beta)</strong><br/>
+  Proof-of-concept: React + Framer Motion front-end • Netlify Functions back-end<br/>
+  2025-06-27 16:09:37 -0400 (first commit) 
+</div>
+      <h1>MicroProblem Finder (Light Beta)</h1>
 
       {/* Subreddit search */}
       <input
