@@ -11,19 +11,20 @@ async function getOAuthToken() {
 
   const resp = await fetch("https://www.reddit.com/api/v1/access_token", {
     method: "POST",
-   headers: {
-  "Content-Type": "application/x-www-form-urlencoded",
-  Authorization: "Basic " +
-    Buffer.from(`${id}:${secret}`).toString("base64"),
-  "User-Agent": "NetlifyFunction/1.0 reddit-niche-ui",
-},
-
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+      Authorization:
+        "Basic " + Buffer.from(`${id}:${secret}`).toString("base64"),
+      "User-Agent": "NetlifyFunction/1.0 reddit-niche-ui",
+    },
     body: "grant_type=client_credentials",
   });
+
   if (!resp.ok) {
     const txt = await resp.text();
     throw new Error(`OAuth token error: HTTP ${resp.status} – ${txt.slice(0,200)}`);
   }
+
   const { access_token } = await resp.json();
   return access_token;
 }
@@ -61,30 +62,39 @@ exports.handler = async function(event) {
   try {
     const token = await getOAuthToken();
 
-    // 3) hit Reddit search
-const res = await fetch(redditURL, { /* … */ });
+    // 3) build the correct URL
+    const redditUrl =
+      `https://oauth.reddit.com/r/${encodeURIComponent(sub)}/search` +
+      `?q=${encodeURIComponent(q)}` +
+      `&restrict_sr=1` +
+      `&sort=${encodeURIComponent(sort)}` +
+      `&t=${encodeURIComponent(t)}` +
+      `&limit=${encodeURIComponent(limit)}` +
+      `&raw_json=1`;
 
-// read the body once
-const text = await res.text();
+    // 4) fetch from Reddit
+    const res = await fetch(redditUrl, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "User-Agent":  "NetlifyFunction/1.0 reddit-niche-ui",
+      },
+    });
 
-if (!res.ok) {
-  // use the same `text` you just read
-  return {
-    statusCode: res.status,
-    headers: { "Access-Control-Allow-Origin": "*" },
-    body: JSON.stringify({ error: text.slice(0, 200) }),
-  };
-}
+    const text = await res.text();
+    if (!res.ok) {
+      return {
+        statusCode: res.status,
+        headers: { "Access-Control-Allow-Origin": "*" },
+        body: JSON.stringify({ error: text.slice(0, 200) }),
+      };
+    }
 
-// now parse the JSON from that text
-const data = JSON.parse(text);
-
-return {
-  statusCode: 200,
-  headers: { "Access-Control-Allow-Origin": "*" },
-  body: JSON.stringify(data),
-};
-
+    const data = JSON.parse(text);
+    return {
+      statusCode: 200,
+      headers: { "Access-Control-Allow-Origin": "*" },
+      body: JSON.stringify(data),
+    };
 
   } catch (err) {
     console.error("[search-posts] error:", err);
