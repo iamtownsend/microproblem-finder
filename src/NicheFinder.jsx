@@ -85,13 +85,15 @@ export default function NicheFinder() {
   const toggleSort = (type) => setSelectedSorts([type]);
 
 // ── Fetch posts helper ────────────────────────────────────────────────
-  const fetchFor = useCallback(async (sub, sort) => {
+// now takes `sub`, `sort`, AND the search query `q`
+  const fetchFor = useCallback(async (sub, sort, q) => {
     try {
       // build & log the Netlify function URL
       const url =
         `/.netlify/functions/search-posts?` +
         `sub=${encodeURIComponent(sub)}` +
         `&sort=${encodeURIComponent(sort)}` +
+        `&q=${encodeURIComponent(q)}` +
         `&t=all` +
         `&limit=50`;
         
