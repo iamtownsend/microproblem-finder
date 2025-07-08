@@ -113,9 +113,14 @@ export default function NicheFinder() {
 
   // ── Execute search & error handling ───────────────────────────────────
   const handleSearch = useCallback(async () => {
+    // 🚫 if they haven’t typed anything yet, do nothing
+    if (!keyword.trim()) {
+      setError("Please enter a search term first.");
+      return;
+    }
     setError(null);
     setLoadingPosts(true);
-
+    
     // pick subs to search
     const subs = useSuggestedSubs
       ? Array.from(
