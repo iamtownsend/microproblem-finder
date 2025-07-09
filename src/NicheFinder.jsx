@@ -3,7 +3,8 @@ import React, { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
 import { phrasePatterns } from "./data/phrasePatterns";
 import "./App.css";
-
+import Footer from "./Footer";
+// ── Constants ───────────────────────────────────────────────────────────
 const SUGGESTION_PAGE_SIZE = 6 * 2;  // two rows of 6 each
 const POSTS_PER_PAGE = 10;
 
@@ -246,7 +247,7 @@ export default function NicheFinder() {
       )}
 <div className="poc-banner">
   <strong> MicroProblem Finder (Light Beta)</strong><br/>
-  Proof-of-concept: React + Framer Motion front-end • Netlify Functions back-end<br/>
+  Proof-of-concept written by Eric T. Schmidt: React + Framer Motion front-end • Netlify Functions back-end<br/>
   2025-06-27 16:09:37 -0400 (first commit) 
 </div>
       <h1>MicroProblem Finder (Light Beta)</h1>
@@ -435,6 +436,11 @@ export default function NicheFinder() {
           </>
         )}
       </div>
+     <Footer />
+     Copyright (c) Eric T. Schmidt 2025
+
+All rights reserved. No part of this software may be reproduced or used in any form without permission.
+
     </div>
   );
 }
