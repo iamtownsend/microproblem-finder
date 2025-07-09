@@ -372,7 +372,8 @@ const visibleSuggestions = untracked.slice(
           className="filter-select"
         >
           <option value="none">No pattern</option>
-          <option value="all">All patterns</option>
+          <option value="all">Most patterns</option>
+          <option disabled>All patterns</option>
         </select>
         <ToggleSwitch
           enabled={useSuggestedSubs}

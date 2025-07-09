@@ -265,3 +265,6 @@ button:disabled, button.btn[disabled] {
   line-height: 1.4;
   color: #333;
 }
+.filter-select option:disabled {
+  color: #999;
+}
