@@ -29,7 +29,7 @@ export default function NicheFinder() {
   const [suggestionPage, setSuggestionPage] = useState(0);
 
   const [trackedSubs, setTrackedSubs] = useState([]);
-  const [selectedSorts, setSelectedSorts] = useState(["top"]);
+  const [selectedSorts, setSelectedSorts] = useState(["hot"]);
   const [useSuggestedSubs, setUseSuggestedSubs] = useState(false);
 
   const [keyword, setKeyword] = useState("");
@@ -244,7 +244,7 @@ const visibleSuggestions = untracked.slice(
     setTopic("");
     setSuggestedSubs([]);
     setTrackedSubs([]);
-    setSelectedSorts(["top"]);
+    setSelectedSorts(["hot"]);
     setKeyword("");
     setPatternChoice("none");
     setRawPosts([]);
