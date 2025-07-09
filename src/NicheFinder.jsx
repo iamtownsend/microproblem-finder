@@ -437,7 +437,7 @@ export default function NicheFinder() {
         )}
       </div>
      <Footer />
-     Copyright (c) Eric T. Schmidt 2025
+    
 
     </div>
   );
