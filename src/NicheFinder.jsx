@@ -113,60 +113,73 @@ export default function NicheFinder() {
   }, []);
 
   // ── Execute search & error handling ───────────────────────────────────
-  const handleSearch = useCallback(async () => {
-     // new: only require a keyword when patternChoice === "none"
-  if (patternChoice === "none" && !keyword.trim()) {
-    setError("Please enter a search term first.");
+const handleSearch = useCallback(async () => {
+  setError(null);
+  setLoadingPosts(true);
+
+  // pick subs to search
+  const subs = useSuggestedSubs
+    ? Array.from(
+        new Set([
+          ...trackedSubs,
+          ...suggestedSubs.map((s) => s.name.toLowerCase()),
+        ])
+      )
+    : trackedSubs;
+
+  if (!subs.length) {
+    setRawPosts([]);
+    setLoadingPosts(false);
     return;
   }
 
-    setError(null);
-    setLoadingPosts(true);
-
-    // pick subs to search
-    const subs = useSuggestedSubs
-      ? Array.from(
-          new Set([
-            ...trackedSubs,
-            ...suggestedSubs.map((s) => s.name.toLowerCase()),
-          ])
-        )
-      : trackedSubs;
-
-    if (!subs.length) {
-      setRawPosts([]);
-      setLoadingPosts(false);
-      return;
-    }
-
-    try {
-      let all = [];
+  try {
+    // up to 3 posts per pattern when "All patterns" is selected
+    let all = [];
+    if (patternChoice === "all") {
+      for (let txt of phrasePatterns) {
+        let matches = [];
+        for (let sub of subs) {
+          // use first sort; extend loop if you want multiple sorts
+          const posts = await fetchFor(sub, selectedSorts[0], txt);
+          matches.push(...posts);
+        }
+        // dedupe and take at most 3
+        const unique = Array.from(
+          new Map(matches.map((p) => [p.url, p])).values()
+        );
+        all.push(...unique.slice(0, 3));
+      }
+    } else {
+      // No pattern: fetch by keyword as before
       for (let sub of subs) {
         for (let sort of selectedSorts) {
-          // pass `keyword` as the q-param
           const posts = await fetchFor(sub, sort, keyword);
-          all = all.concat(posts);
+          all.push(...posts);
         }
       }
-      // dedupe by URL
-      const seen = new Map();
-      all.forEach((p) => seen.set(p.url, p));
-      setRawPosts(Array.from(seen.values()));
-    } catch (e) {
-      console.error("handleSearch error:", e);
-      setError("There was an error fetching posts. Please try again.");
-    } finally {
-      setLoadingPosts(false);
     }
-  }, [
-    trackedSubs,
-    suggestedSubs,
-    useSuggestedSubs,
-    selectedSorts,
-    fetchFor,
-    keyword,           // <-- ensure keyword is in deps
-    patternChoice,      // <-- added to satisfy the hook linter
-  ]);
+
+    // dedupe globally by URL
+    const seen = new Map();
+    all.forEach((p) => seen.set(p.url, p));
+    setRawPosts(Array.from(seen.values()));
+  } catch (e) {
+    console.error("handleSearch error:", e);
+    setError("There was an error fetching posts. Please try again.");
+  } finally {
+    setLoadingPosts(false);
+  }
+}, [
+  trackedSubs,
+  suggestedSubs,
+  useSuggestedSubs,
+  selectedSorts,
+  fetchFor,
+  keyword,
+  patternChoice,
+]);
+
 
   // auto-search when sort, subs, or toggle changes
  // useEffect(() => {
