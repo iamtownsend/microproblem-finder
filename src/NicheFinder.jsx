@@ -175,40 +175,48 @@ export default function NicheFinder() {
 
   // ── Filter, Sort & Reset posts ───────────────────────────────────────
   useEffect(() => {
-    let posts = [...rawPosts];
-    const kw = keyword.trim().toLowerCase();
+  let posts = [...rawPosts];
+  const kw = keyword.trim().toLowerCase();
 
-    if (patternChoice === "none") {
-      if (kw) {
-        posts = posts.filter((p) => p.title.toLowerCase().includes(kw));
-      }
-    } else {
-      posts = posts.filter((p) => {
-        const t = p.title.toLowerCase();
-        const matchesPattern = phrasePatterns.some((txt) =>
-          new RegExp(`\\b${txt.replace(/ /g, "\\s+")}\\b`, "i").test(p.title)
-        );
-        return (!kw || t.includes(kw)) && matchesPattern;
-      });
+  if (patternChoice === "none") {
+    // No pattern: only filter by keyword (if provided)
+    if (kw) {
+      posts = posts.filter(p =>
+        p.title.toLowerCase().includes(kw)
+      );
     }
+  } else {
+    // All patterns: require EVERY pattern to match
+    posts = posts.filter(p => {
+      const title = p.title.toLowerCase();
+      // 1) all patterns must match
+      const allMatch = phrasePatterns.every(txt =>
+        new RegExp(`\\b${txt.replace(/ /g, "\\s+")}\\b`, "i").test(p.title)
+      );
+      if (!allMatch) return false;
+      // 2) also match keyword if provided
+      return !kw || title.includes(kw);
+    });
+  }
 
-    posts.sort((a, b) => b.score - a.score);
-    setFilteredPosts(posts);
-    setResultPage(0);
-  }, [rawPosts, keyword, patternChoice]);
+  // sort by score, reset pagination
+  posts.sort((a, b) => b.score - a.score);
+  setFilteredPosts(posts);
+  setResultPage(0);
 
-  // ── Suggestions pagination ────────────────────────────────────────────
-  const untracked = suggestedSubs.filter(
-    (s) => !trackedSubs.includes(s.name.toLowerCase())
-  );
-  const suggestionPageCount = Math.ceil(
-    untracked.length / SUGGESTION_PAGE_SIZE
-  );
-  const visibleSuggestions = untracked.slice(
-    suggestionPage * SUGGESTION_PAGE_SIZE,
-    suggestionPage * SUGGESTION_PAGE_SIZE + SUGGESTION_PAGE_SIZE
-  );
+}, [rawPosts, keyword, patternChoice]);  // ← don’t forget this
 
+// ── Suggestions pagination ────────────────────────────────────────────
+const untracked = suggestedSubs.filter(
+  s => !trackedSubs.includes(s.name.toLowerCase())
+);
+const suggestionPageCount = Math.ceil(
+  untracked.length / SUGGESTION_PAGE_SIZE
+);
+const visibleSuggestions = untracked.slice(
+  suggestionPage * SUGGESTION_PAGE_SIZE,
+  suggestionPage * SUGGESTION_PAGE_SIZE + SUGGESTION_PAGE_SIZE
+);
   // ── Results pagination ────────────────────────────────────────────────
   const resultPageCount = Math.ceil(filteredPosts.length / POSTS_PER_PAGE);
   const pageResults = filteredPosts.slice(
