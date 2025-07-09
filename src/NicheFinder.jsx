@@ -439,8 +439,6 @@ export default function NicheFinder() {
      <Footer />
      Copyright (c) Eric T. Schmidt 2025
 
-All rights reserved. No part of this software may be reproduced or used in any form without permission.
-
     </div>
   );
 }
