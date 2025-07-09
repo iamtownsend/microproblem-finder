@@ -114,11 +114,12 @@ export default function NicheFinder() {
 
   // ── Execute search & error handling ───────────────────────────────────
   const handleSearch = useCallback(async () => {
-    // 🚫 if they haven’t typed anything yet, do nothing
-    if (!keyword.trim()) {
-      setError("Please enter a search term first.");
-      return;
-    }
+     // new: only require a keyword when patternChoice === "none"
+  if (patternChoice === "none" && !keyword.trim()) {
+    setError("Please enter a search term first.");
+    return;
+  }
+
     setError(null);
     setLoadingPosts(true);
 
@@ -175,36 +176,36 @@ export default function NicheFinder() {
 
   // ── Filter, Sort & Reset posts ───────────────────────────────────────
   useEffect(() => {
-  let posts = [...rawPosts];
   const kw = keyword.trim().toLowerCase();
 
+  let posts = [];
   if (patternChoice === "none") {
-    // No pattern: only filter by keyword (if provided)
-    if (kw) {
-      posts = posts.filter(p =>
-        p.title.toLowerCase().includes(kw)
-      );
-    }
+    // No pattern: all posts that match the keyword (or all if no kw)
+    posts = rawPosts.filter((p) =>
+      kw ? p.title.toLowerCase().includes(kw) : true
+    );
   } else {
-    // All patterns: require EVERY pattern to match
-    posts = posts.filter(p => {
-      const title = p.title.toLowerCase();
-      // 1) all patterns must match
-      const allMatch = phrasePatterns.every(txt =>
-        new RegExp(`\\b${txt.replace(/ /g, "\\s+")}\\b`, "i").test(p.title)
-      );
-      if (!allMatch) return false;
-      // 2) also match keyword if provided
-      return !kw || title.includes(kw);
+    // All patterns: up to 3 posts per pattern
+    phrasePatterns.forEach((txt) => {
+      const regex = new RegExp(`\\b${txt.replace(/ /g, "\\s+")}\\b`, "i");
+      let matches = rawPosts.filter((p) => regex.test(p.title));
+
+      // if they did type a keyword, apply it; otherwise skip
+      if (kw) {
+        matches = matches.filter((p) =>
+          p.title.toLowerCase().includes(kw)
+        );
+      }
+
+      // take at most 3 for this pattern
+      posts.push(...matches.slice(0, 3));
     });
   }
 
-  // sort by score, reset pagination
-  posts.sort((a, b) => b.score - a.score);
   setFilteredPosts(posts);
   setResultPage(0);
+}, [rawPosts, keyword, patternChoice]);
 
-}, [rawPosts, keyword, patternChoice]);  // ← don’t forget this
 
 // ── Suggestions pagination ────────────────────────────────────────────
 const untracked = suggestedSubs.filter(
