@@ -165,6 +165,7 @@ export default function NicheFinder() {
     selectedSorts,
     fetchFor,
     keyword,           // <-- ensure keyword is in deps
+    patternChoice,      // <-- added to satisfy the hook linter
   ]);
 
   // auto-search when sort, subs, or toggle changes
