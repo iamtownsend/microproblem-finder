@@ -1,0 +1,22 @@
+.app-footer {
+  background: #f8f8f8;
+  color: #666;
+  text-align: center;
+  padding: 1rem 0;
+  font-size: 0.85rem;
+  border-top: 1px solid #ddd;
+  margin-top: 2rem;
+}
+
+.app-footer a {
+  color: #666;
+  text-decoration: none;
+}
+
+.app-footer a:hover {
+  text-decoration: underline;
+}
+
+.legal-links {
+  margin-top: 0.5rem;
+}
