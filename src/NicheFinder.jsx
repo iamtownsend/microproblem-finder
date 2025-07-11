@@ -114,6 +114,7 @@ export default function NicheFinder() {
   }, []);
 
   // ── Execute search & error handling ───────────────────────────────────
+  // eslint-disable-next-line react-hooks/exhaustive-deps
 const handleSearch = useCallback(async () => {
   setError(null);
   setLoadingPosts(true);
