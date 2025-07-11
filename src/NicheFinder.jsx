@@ -174,7 +174,6 @@ const handleSearch = useCallback(async () => {
   }
 }, [
   trackedSubs,
-  suggestedSubs,
   useSuggestedSubs,
   selectedSorts,
   fetchFor,
