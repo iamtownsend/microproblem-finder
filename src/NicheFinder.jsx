@@ -3,6 +3,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
 import { phrasePatterns } from "./data/phrasePatterns";
 import "./App.css";
+import { starterSubreddits } from "./data/starterSubreddits";
 import Footer from "./Footer";
 // ── Constants ───────────────────────────────────────────────────────────
 const SUGGESTION_PAGE_SIZE = 6 * 2;  // two rows of 6 each
@@ -122,7 +123,7 @@ const handleSearch = useCallback(async () => {
     ? Array.from(
         new Set([
           ...trackedSubs,
-          ...suggestedSubs.map((s) => s.name.toLowerCase()),
+          ...starterSubreddits.map((s) => s.toLowerCase()),
         ])
       )
     : trackedSubs;
