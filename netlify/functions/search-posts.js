@@ -63,14 +63,14 @@ exports.handler = async function(event) {
     const token = await getOAuthToken();
 
     // 3) build the correct URL
-    const redditUrl =
-      `https://oauth.reddit.com/r/${encodeURIComponent(sub)}/search` +
-      `?q=${encodeURIComponent(q)}` +
-      `&restrict_sr=1` +
-      `&sort=${encodeURIComponent(sort)}` +
-      `&t=${encodeURIComponent(t)}` +
-      `&limit=${encodeURIComponent(limit)}` +
-      `&raw_json=1`;
+  const redditUrl =
+  `https://oauth.reddit.com/r/${encodeURIComponent(sub)}/search.json` +   // ← note the “.json”
+  `?q=${encodeURIComponent(q)}` +
+  `&restrict_sr=1` +
+  `&sort=${encodeURIComponent(sort)}` +
+  `&t=${encodeURIComponent(t)}` +
+  `&limit=${encodeURIComponent(limit)}` +
+  `&raw_json=1`;
 
     // 4) fetch from Reddit
     const res = await fetch(redditUrl, {
