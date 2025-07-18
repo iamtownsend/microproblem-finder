@@ -130,16 +130,15 @@ export default function NicheFinder() {
       let all = [];
 
       if (patternChoice === "all") {
+        // up to 3 per pattern per sub
         for (let txt of phrasePatterns) {
-          let matches = [];
           for (let sub of subs) {
-            matches.push(...(await fetchFor(sub, selectedSorts[0], txt)));
+            const posts = await fetchFor(sub, selectedSorts[0], txt);
+            all.push(...posts.slice(0, 3));
           }
-          // dedupe and take at most 3 per pattern
-          const uniq = Array.from(new Map(matches.map(p => [p.url, p])).values());
-          all.push(...uniq.slice(0, 3));
         }
       } else {
+        // keyword search
         for (let sub of subs) {
           for (let sort of selectedSorts) {
             all.push(...(await fetchFor(sub, sort, keyword)));
@@ -147,7 +146,7 @@ export default function NicheFinder() {
         }
       }
 
-      // global dedupe + sort by score descending
+      // dedupe globally & sort by score
       const uniquePosts = Array.from(new Map(all.map(p => [p.url, p])).values());
       uniquePosts.sort((a, b) => b.score - a.score);
       setRawPosts(uniquePosts);
@@ -187,7 +186,7 @@ export default function NicheFinder() {
   }, [rawPosts, keyword, patternChoice]);
 
   // ── Pagination ───────────────────────────────────────────────────────
-  const untracked = suggestedSubs.filter(s => !trackedSubs.includes(s.name.toLowerCase()));
+  const untracked          = suggestedSubs.filter(s => !trackedSubs.includes(s.name.toLowerCase()));
   const suggestionPageCount = Math.ceil(untracked.length / SUGGESTION_PAGE_SIZE);
   const visibleSuggestions  = untracked.slice(
     suggestionPage * SUGGESTION_PAGE_SIZE,

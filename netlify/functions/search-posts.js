@@ -64,10 +64,10 @@ exports.handler = async function(event) {
   try {
     const token = await getOAuthToken();
 
-    // build the URL (note the “.json”)
+    // build the URL (note the “.json” and quoted q)
     const redditUrl =
       `https://oauth.reddit.com/r/${encodeURIComponent(sub)}/search.json` +
-      `?q=${encodeURIComponent(`"${q}"`)}` +      // wrap search in quotes
+      `?q=${encodeURIComponent(`"${q}"`)}` +
       `&restrict_sr=1` +
       `&sort=${encodeURIComponent(effectiveSort)}` +
       `&t=${encodeURIComponent(t)}` +
