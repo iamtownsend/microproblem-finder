@@ -134,7 +134,7 @@ export default function NicheFinder() {
         for (let txt of phrasePatterns) {
           for (let sub of subs) {
             const posts = await fetchFor(sub, selectedSorts[0], txt);
-            all.push(...posts.slice(0, 3));
+            all.push(...posts.slice(0, 7));
           }
         }
       } else {
@@ -177,7 +177,7 @@ export default function NicheFinder() {
         const regex = new RegExp(`\\b${txt.replace(/ /g,"\\s+")}\\b`, "i");
         let matches = rawPosts.filter(p => regex.test(p.title));
         if (kw) matches = matches.filter(p => p.title.toLowerCase().includes(kw));
-        posts.push(...matches.slice(0,3));
+        posts.push(...matches.slice(0,7));
       });
     }
 
