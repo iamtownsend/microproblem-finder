@@ -5,8 +5,9 @@ import { phrasePatterns } from "./data/phrasePatterns";
 import "./App.css";
 import { starterSubreddits } from "./data/starterSubreddits";
 import Footer from "./Footer";
+
 // ── Constants ───────────────────────────────────────────────────────────
-const SUGGESTION_PAGE_SIZE = 6 * 2;  // two rows of 6 each
+const SUGGESTION_PAGE_SIZE = 6 * 2; // two rows of 6 each
 const POSTS_PER_PAGE = 10;
 
 // ── Springy Toggle ───────────────────────────────────────────────────────
@@ -45,20 +46,30 @@ export default function NicheFinder() {
   // ── Fetch Subreddits ───────────────────────────────────────────────────
   const fetchSubreddits = useCallback(async (q) => {
     if (!q.trim()) {
+      console.log("[fetchSubreddits] empty query, clearing suggestions");
       setSuggestedSubs([]);
       return;
     }
     try {
+      console.log(`[fetchSubreddits] querying '${q}'…`);
       const res = await fetch(
         `/.netlify/functions/search-subs?q=${encodeURIComponent(q)}&limit=100`
       );
-      const { data } = await res.json();
-      setSuggestedSubs(
-        data.children
-          .map((c) => ({ name: c.data.display_name, over18: c.data.over18 }))
-          .filter((s) => !s.over18)
-      );
-    } catch {
+      const json = await res.json();
+      console.log("[fetchSubreddits] raw response:", json);
+
+      const { data } = json;
+      const children = Array.isArray(data?.children) ? data.children : [];
+      console.log(`[fetchSubreddits] children count: ${children.length}`);
+
+      const subs = children
+        .map((c) => ({ name: c.data.display_name, over18: c.data.over18 }))
+        .filter((s) => !s.over18);
+      console.log("[fetchSubreddits] mapped & filtered subs:", subs);
+
+      setSuggestedSubs(subs);
+    } catch (err) {
+      console.error("[fetchSubreddits] error:", err);
       setSuggestedSubs([]);
     }
   }, []);
@@ -69,6 +80,7 @@ export default function NicheFinder() {
   }, [topic, fetchSubreddits]);
 
   useEffect(() => {
+    console.log("[suggestedSubs] updated:", suggestedSubs);
     setSuggestionPage(0);
   }, [suggestedSubs]);
 
@@ -86,7 +98,6 @@ export default function NicheFinder() {
   const toggleSort = (type) => setSelectedSorts([type]);
 
   // ── Fetch posts helper ────────────────────────────────────────────────
-  // now takes `sub`, `sort` AND a search-query `q`
   const fetchFor = useCallback(async (sub, sort, q) => {
     try {
       const url =
@@ -96,17 +107,15 @@ export default function NicheFinder() {
         `&q=${encodeURIComponent(q)}` +
         `&t=all` +
         `&limit=50`;
-
       console.log("🔗 fetchFor URL:", url);
-
       const res = await fetch(url);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const { data } = await res.json();
       return data.children.map((c) => ({
         subreddit: c.data.subreddit.toLowerCase(),
-        title:     c.data.title,
-        score:     c.data.score,
-        url:       `https://reddit.com${c.data.permalink}`,
+        title: c.data.title,
+        score: c.data.score,
+        url: `https://reddit.com${c.data.permalink}`,
       }));
     } catch {
       return [];
@@ -114,125 +123,107 @@ export default function NicheFinder() {
   }, []);
 
   // ── Execute search & error handling ───────────────────────────────────
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-const handleSearch = useCallback(async () => {
-  setError(null);
-  setLoadingPosts(true);
+  const handleSearch = useCallback(async () => {
+    setError(null);
+    setLoadingPosts(true);
 
-  // pick subs to search
-  const subs = useSuggestedSubs
-    ? Array.from(
-        new Set([
-          ...trackedSubs,
-          ...starterSubreddits.map((s) => s.toLowerCase()),
-        ])
-      )
-    : trackedSubs;
-
-  if (!subs.length) {
-    setRawPosts([]);
-    setLoadingPosts(false);
-    return;
-  }
-
-  try {
-    // up to 3 posts per pattern when "All patterns" is selected
-    let all = [];
-    if (patternChoice === "all") {
-      for (let txt of phrasePatterns) {
-        let matches = [];
-        for (let sub of subs) {
-          // use first sort; extend loop if you want multiple sorts
-          const posts = await fetchFor(sub, selectedSorts[0], txt);
-          matches.push(...posts);
-        }
-        // dedupe and take at most 3
-        const unique = Array.from(
-          new Map(matches.map((p) => [p.url, p])).values()
-        );
-        all.push(...unique.slice(0, 3));
-      }
-    } else {
-      // No pattern: fetch by keyword as before
-      for (let sub of subs) {
-        for (let sort of selectedSorts) {
-          const posts = await fetchFor(sub, sort, keyword);
-          all.push(...posts);
-        }
-      }
+    const subs = useSuggestedSubs
+      ? Array.from(
+          new Set([
+            ...trackedSubs,
+            ...starterSubreddits.map((s) => s.toLowerCase()),
+          ])
+        )
+      : trackedSubs;
+    if (!subs.length) {
+      setRawPosts([]);
+      setLoadingPosts(false);
+      return;
     }
 
-    // dedupe globally by URL
-    const seen = new Map();
-    all.forEach((p) => seen.set(p.url, p));
-    setRawPosts(Array.from(seen.values()));
-  } catch (e) {
-    console.error("handleSearch error:", e);
-    setError("There was an error fetching posts. Please try again.");
-  } finally {
-    setLoadingPosts(false);
-  }
-}, [
-  trackedSubs,
-  useSuggestedSubs,
-  selectedSorts,
-  fetchFor,
-  keyword,
-  patternChoice,
-]);
-
-
-  // auto-search when sort, subs, or toggle changes
- // useEffect(() => {
-//    if (trackedSubs.length || useSuggestedSubs) {
- //     handleSearch();
-//    }
-//  }, [selectedSorts, useSuggestedSubs, trackedSubs, handleSearch]);
+    try {
+      let all = [];
+      if (patternChoice === "all") {
+        for (let txt of phrasePatterns) {
+          let matches = [];
+          for (let sub of subs) {
+            const posts = await fetchFor(sub, selectedSorts[0], txt);
+            matches.push(...posts);
+          }
+          const unique = Array.from(
+            new Map(matches.map((p) => [p.url, p])).values()
+          );
+          all.push(...unique.slice(0, 3));
+        }
+      } else {
+        for (let sub of subs) {
+          for (let sort of selectedSorts) {
+            const posts = await fetchFor(sub, sort, keyword);
+            all.push(...posts);
+          }
+        }
+      }
+      const seen = new Map();
+      all.forEach((p) => seen.set(p.url, p));
+      setRawPosts(Array.from(seen.values()));
+    } catch (e) {
+      console.error("handleSearch error:", e);
+      setError("There was an error fetching posts. Please try again.");
+    } finally {
+      setLoadingPosts(false);
+    }
+  }, [
+    trackedSubs,
+    useSuggestedSubs,
+    selectedSorts,
+    fetchFor,
+    keyword,
+    patternChoice,
+  ]);
 
   // ── Filter, Sort & Reset posts ───────────────────────────────────────
   useEffect(() => {
-  const kw = keyword.trim().toLowerCase();
+    const kw = keyword.trim().toLowerCase();
+    let posts = [];
 
-  let posts = [];
-  if (patternChoice === "none") {
-    // No pattern: all posts that match the keyword (or all if no kw)
-    posts = rawPosts.filter((p) =>
-      kw ? p.title.toLowerCase().includes(kw) : true
-    );
-  } else {
-    // All patterns: up to 3 posts per pattern
-    phrasePatterns.forEach((txt) => {
-      const regex = new RegExp(`\\b${txt.replace(/ /g, "\\s+")}\\b`, "i");
-      let matches = rawPosts.filter((p) => regex.test(p.title));
-
-      // if they did type a keyword, apply it; otherwise skip
-      if (kw) {
-        matches = matches.filter((p) =>
+    if (patternChoice === "none") {
+      posts = rawPosts.filter((p) =>
+        kw ? p.title.toLowerCase().includes(kw) : true
+      );
+    } else {
+      phrasePatterns.forEach((txt) => {
+        const regex = new RegExp(`\\b${txt.replace(/ /g, "\\s+")}\\b`, "i");
+        let matches = rawPosts.filter((p) => regex.test(p.title));
+        if (kw) matches = matches.filter((p) =>
           p.title.toLowerCase().includes(kw)
         );
-      }
+        posts.push(...matches.slice(0, 3));
+      });
+    }
 
-      // take at most 3 for this pattern
-      posts.push(...matches.slice(0, 3));
-    });
-  }
+    setFilteredPosts(posts);
+    setResultPage(0);
+  }, [rawPosts, keyword, patternChoice]);
 
-  setFilteredPosts(posts);
-  setResultPage(0);
-}, [rawPosts, keyword, patternChoice]);
+  // ── Suggestions pagination ────────────────────────────────────────────
+  const untracked = suggestedSubs.filter(
+    (s) => !trackedSubs.includes(s.name.toLowerCase())
+  );
+  const suggestionPageCount = Math.ceil(
+    untracked.length / SUGGESTION_PAGE_SIZE
+  );
+  const visibleSuggestions = untracked.slice(
+    suggestionPage * SUGGESTION_PAGE_SIZE,
+    suggestionPage * SUGGESTION_PAGE_SIZE + SUGGESTION_PAGE_SIZE
+  );
 
+  useEffect(() => {
+    console.log(
+      `[visibleSuggestions] page ${suggestionPage + 1}/${suggestionPageCount}:`,
+      visibleSuggestions
+    );
+  }, [visibleSuggestions, suggestionPage, suggestionPageCount]);
 
-// ── Suggestions pagination ────────────────────────────────────────────
-const untracked = suggestedSubs.filter(
-  s => !trackedSubs.includes(s.name.toLowerCase())
-);
-const suggestionPageCount = Math.ceil(
-  untracked.length / SUGGESTION_PAGE_SIZE
-);
-const visibleSuggestions = untracked.slice(
-  suggestionPage * SUGGESTION_PAGE_SIZE,
-  suggestionPage * SUGGESTION_PAGE_SIZE + SUGGESTION_PAGE_SIZE
-);
   // ── Results pagination ────────────────────────────────────────────────
   const resultPageCount = Math.ceil(filteredPosts.length / POSTS_PER_PAGE);
   const pageResults = filteredPosts.slice(
@@ -264,16 +255,20 @@ const visibleSuggestions = untracked.slice(
           <div className="spinner" />
           {patternChoice === "all" && (
             <div className="loading-message">
-              Selecting “All patterns” will take a bit longer. Please be patient…
+              Selecting “All patterns” will take a bit longer. Please be
+              patient…
             </div>
           )}
         </div>
       )}
-<div className="poc-banner">
-  <strong> MicroProblem Finder (Light Beta)</strong><br/>
-  Proof-of-concept written by Eric T. Schmidt: React + Framer Motion front-end • Netlify Functions back-end<br/>
-  2025-06-27 16:09:37 -0400 (first commit) 
-</div>
+      <div className="poc-banner">
+        <strong> MicroProblem Finder (Light Beta)</strong>
+        <br />
+        Proof-of-concept written by Eric T. Schmidt: React + Framer Motion
+        front-end • Netlify Functions back-end
+        <br />
+        2025-06-27 16:09:37 -0400 (first commit)
+      </div>
       <h1>MicroProblem Finder (Light Beta)</h1>
 
       {/* Subreddit search */}
@@ -461,9 +456,7 @@ const visibleSuggestions = untracked.slice(
           </>
         )}
       </div>
-     <Footer />
-    
-
+      <Footer />
     </div>
   );
 }
