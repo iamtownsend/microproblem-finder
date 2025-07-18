@@ -25,22 +25,22 @@ const ToggleSwitch = ({ enabled, onToggle, label }) => (
 
 export default function NicheFinder() {
   // ── State Hooks ────────────────────────────────────────────────────────
-  const [topic,           setTopic]           = useState("");
-  const [suggestedSubs,   setSuggestedSubs]   = useState([]);
-  const [suggestionPage,  setSuggestionPage]  = useState(0);
+  const [topic,            setTopic]            = useState("");
+  const [suggestedSubs,    setSuggestedSubs]    = useState([]);
+  const [suggestionPage,   setSuggestionPage]   = useState(0);
 
-  const [trackedSubs,     setTrackedSubs]     = useState([]);
-  const [selectedSorts,   setSelectedSorts]   = useState(["relevance"]);
-  const [useSuggestedSubs,setUseSuggestedSubs]= useState(false);
+  const [trackedSubs,      setTrackedSubs]      = useState([]);
+  const [selectedSorts,    setSelectedSorts]    = useState(["relevance"]);
+  const [useSuggestedSubs, setUseSuggestedSubs] = useState(false);
 
-  const [keyword,         setKeyword]         = useState("");
-  const [patternChoice,   setPatternChoice]   = useState("none");
+  const [keyword,          setKeyword]          = useState("");
+  const [patternChoice,    setPatternChoice]    = useState("none");
 
-  const [rawPosts,        setRawPosts]        = useState([]);
-  const [filteredPosts,   setFilteredPosts]   = useState([]);
-  const [loadingPosts,    setLoadingPosts]    = useState(false);
-  const [resultPage,      setResultPage]      = useState(0);
-  const [error,           setError]           = useState(null);
+  const [rawPosts,         setRawPosts]         = useState([]);
+  const [filteredPosts,    setFilteredPosts]    = useState([]);
+  const [loadingPosts,     setLoadingPosts]     = useState(false);
+  const [resultPage,       setResultPage]       = useState(0);
+  const [error,            setError]            = useState(null);
 
   // ── Fetch Subreddits ───────────────────────────────────────────────────
   const fetchSubreddits = useCallback(async (q) => {
@@ -136,8 +136,8 @@ export default function NicheFinder() {
             matches.push(...(await fetchFor(sub, selectedSorts[0], txt)));
           }
           // dedupe and take at most 3 per pattern
-          const uniq = Array.from(new Map(matches.map(p => [p.url,p])).values());
-          all.push(...uniq.slice(0,3));
+          const uniq = Array.from(new Map(matches.map(p => [p.url, p])).values());
+          all.push(...uniq.slice(0, 3));
         }
       } else {
         for (let sub of subs) {
@@ -147,17 +147,24 @@ export default function NicheFinder() {
         }
       }
 
-      // global dedupe
-      const seen = new Map();
-      all.forEach(p => seen.set(p.url, p));
-      setRawPosts(Array.from(seen.values()));
+      // global dedupe + sort by score descending
+      const uniquePosts = Array.from(new Map(all.map(p => [p.url, p])).values());
+      uniquePosts.sort((a, b) => b.score - a.score);
+      setRawPosts(uniquePosts);
     } catch (e) {
       console.error("handleSearch error:", e);
       setError("There was an error fetching posts. Please try again.");
     } finally {
       setLoadingPosts(false);
     }
-  }, [trackedSubs, useSuggestedSubs, selectedSorts, fetchFor, keyword, patternChoice]);
+  }, [
+    trackedSubs,
+    useSuggestedSubs,
+    selectedSorts,
+    fetchFor,
+    keyword,
+    patternChoice,
+  ]);
 
   // ── Filter & Reset posts ──────────────────────────────────────────────
   useEffect(() => {
@@ -184,13 +191,13 @@ export default function NicheFinder() {
   const suggestionPageCount = Math.ceil(untracked.length / SUGGESTION_PAGE_SIZE);
   const visibleSuggestions  = untracked.slice(
     suggestionPage * SUGGESTION_PAGE_SIZE,
-    (suggestionPage+1) * SUGGESTION_PAGE_SIZE
+    (suggestionPage + 1) * SUGGESTION_PAGE_SIZE
   );
 
   const resultPageCount = Math.ceil(filteredPosts.length / POSTS_PER_PAGE);
   const pageResults     = filteredPosts.slice(
     resultPage * POSTS_PER_PAGE,
-    (resultPage+1) * POSTS_PER_PAGE
+    (resultPage + 1) * POSTS_PER_PAGE
   );
 
   const handleReset = () => {
@@ -241,12 +248,12 @@ export default function NicheFinder() {
                 <motion.li
                   key={s.name}
                   layoutId={`sub-${s.name}`}
-                  initial={{ opacity:0, y:-10 }}
-                  animate={{ opacity:1, y:0 }}
-                  exit={{ opacity:0, y:-10 }}
-                  transition={{ duration:0.2 }}
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2 }}
                   className="suggestion"
-                  onClick={()=>addSub(s.name)}
+                  onClick={() => addSub(s.name)}
                 >
                   {s.name}
                 </motion.li>
@@ -254,9 +261,9 @@ export default function NicheFinder() {
             </AnimatePresence>
           </ul>
           <div className="pagination">
-            <button disabled={suggestionPage===0} onClick={()=>setSuggestionPage(p=>p-1)}>Prev</button>
-            <span>Page {suggestionPage+1} of {suggestionPageCount||1}</span>
-            <button disabled={suggestionPage+1>=suggestionPageCount} onClick={()=>setSuggestionPage(p=>p+1)}>Next</button>
+            <button disabled={suggestionPage === 0} onClick={() => setSuggestionPage(p => p - 1)}>Prev</button>
+            <span>Page {suggestionPage + 1} of {suggestionPageCount || 1}</span>
+            <button disabled={suggestionPage + 1 >= suggestionPageCount} onClick={() => setSuggestionPage(p => p + 1)}>Next</button>
           </div>
         </LayoutGroup>
       )}
@@ -264,12 +271,12 @@ export default function NicheFinder() {
       {/* tracked chips */}
       <div className="chips">
         <AnimatePresence>
-          {trackedSubs.map(s=>(
+          {trackedSubs.map(s => (
             <motion.span
               key={s}
               layoutId={`sub-${s}`}
               className="chip"
-              onClick={()=>removeSub(s)}
+              onClick={() => removeSub(s)}
             >
               {s} ×
             </motion.span>
@@ -279,11 +286,11 @@ export default function NicheFinder() {
 
       {/* sorts */}
       <div className="sorts">
-        {["relevance","hot","new","top"].map(type=>(
+        {["relevance", "hot", "new", "top"].map(type => (
           <motion.button
             key={type}
-            className={selectedSorts.includes(type)?"on":""}
-            onClick={()=>toggleSort(type)}
+            className={selectedSorts.includes(type) ? "on" : ""}
+            onClick={() => toggleSort(type)}
           >
             {type}
           </motion.button>
@@ -294,13 +301,13 @@ export default function NicheFinder() {
       <div className="filters">
         <input
           value={keyword}
-          onChange={e=>setKeyword(e.target.value)}
+          onChange={e => setKeyword(e.target.value)}
           placeholder="Filter titles…"
           className="filter-input short"
         />
         <select
           value={patternChoice}
-          onChange={e=>setPatternChoice(e.target.value)}
+          onChange={e => setPatternChoice(e.target.value)}
           className="filter-select"
         >
           <option value="none">No pattern</option>
@@ -309,7 +316,7 @@ export default function NicheFinder() {
         </select>
         <ToggleSwitch
           enabled={useSuggestedSubs}
-          onToggle={()=>setUseSuggestedSubs(p=>!p)}
+          onToggle={() => setUseSuggestedSubs(p => !p)}
           label="Include starter subs"
         />
       </div>
@@ -325,7 +332,7 @@ export default function NicheFinder() {
       {/* results */}
       <div className="results-section">
         <motion.ul className="results">
-          {pageResults.map(p=>(
+          {pageResults.map(p => (
             <motion.li key={p.url} className="card">
               <a href={p.url} target="_blank" rel="noopener noreferrer">{p.title}</a>
               <motion.span className="score">🔥 {p.score}</motion.span>
@@ -333,9 +340,9 @@ export default function NicheFinder() {
           ))}
         </motion.ul>
         <div className="pagination">
-          <button disabled={resultPage===0} onClick={()=>setResultPage(p=>p-1)}>Prev</button>
-          <span>Page {resultPage+1} of {resultPageCount||1}</span>
-          <button disabled={resultPage+1>=resultPageCount} onClick={()=>setResultPage(p=>p+1)}>Next</button>
+          <button disabled={resultPage === 0} onClick={() => setResultPage(p => p - 1)}>Prev</button>
+          <span>Page {resultPage + 1} of {resultPageCount || 1}</span>
+          <button disabled={resultPage + 1 >= resultPageCount} onClick={() => setResultPage(p => p + 1)}>Next</button>
         </div>
       </div>
 

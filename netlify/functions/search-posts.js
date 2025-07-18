@@ -58,7 +58,7 @@ exports.handler = async function(event) {
     };
   }
 
-  // if there's a query string, default to Reddit's relevance sort
+  // if there's a query, default to relevance
   const effectiveSort = q.trim() ? "relevance" : sort;
 
   try {
@@ -66,15 +66,14 @@ exports.handler = async function(event) {
 
     // build the URL (note the “.json”)
     const redditUrl =
-  `https://oauth.reddit.com/r/${encodeURIComponent(sub)}/search.json` +
-  `?q=${encodeURIComponent(`"${q}"`)}` +      // ← wrap the query in quotes
-  `&restrict_sr=1` +
-  `&sort=${encodeURIComponent(sort)}` +
-  `&t=${encodeURIComponent(t)}` +
-  `&limit=${encodeURIComponent(limit)}` +
-  `&raw_json=1`;
+      `https://oauth.reddit.com/r/${encodeURIComponent(sub)}/search.json` +
+      `?q=${encodeURIComponent(`"${q}"`)}` +      // wrap search in quotes
+      `&restrict_sr=1` +
+      `&sort=${encodeURIComponent(effectiveSort)}` +
+      `&t=${encodeURIComponent(t)}` +
+      `&limit=${encodeURIComponent(limit)}` +
+      `&raw_json=1`;
 
-    // fetch from Reddit
     const res = await fetch(redditUrl, {
       headers: {
         Authorization: `Bearer ${token}`,
