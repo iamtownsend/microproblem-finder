@@ -130,26 +130,18 @@ export default function NicheFinder() {
     }
 
     try {
-      let all = [];
+    let all = [];
+    // for each subreddit, pull its feed once...
+    for (let sub of subs) {
+      const posts = await fetchFor(sub, selectedSorts[0], "");
 
-      if (patternChoice === "all") {
-        for (let txt of phrasePatterns) {
-          let matches = [];
-          for (let sub of subs) {
-            matches.push(...(await fetchFor(sub, selectedSorts[0], txt)));
-          }
-          const unique = Array.from(
-            new Map(matches.map((p) => [p.url, p])).values()
-          );
-          all.push(...unique.slice(0, 3));
-        }
-      } else {
-        for (let sub of subs) {
-          for (let sort of selectedSorts) {
-            all.push(...(await fetchFor(sub, sort, keyword)));
-          }
-        }
-      }
+      // then for each phrase, pick up to 3 matches locally
+      phrasePatterns.forEach((txt) => {
+        const regex = new RegExp(`\\b${txt.replace(/ /g, "\\s+")}\\b`, "i");
+        const matches = posts.filter((p) => regex.test(p.title)).slice(0, 3);
+        all.push(...matches);
+      });
+    }
 
       const seen = new Map();
       all.forEach((p) => seen.set(p.url, p));
