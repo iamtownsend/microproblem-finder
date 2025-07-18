@@ -1,4 +1,3 @@
-// netlify/functions/search-posts.js
 const fetch = require("node-fetch");
 
 // Helper: grab an app-only token via client_credentials
@@ -30,7 +29,7 @@ async function getOAuthToken() {
 }
 
 exports.handler = async function(event) {
-  // 1) CORS preflight
+  // CORS preflight
   if (event.httpMethod === "OPTIONS") {
     return {
       statusCode: 204,
@@ -42,13 +41,13 @@ exports.handler = async function(event) {
     };
   }
 
-  // 2) parse & validate
+  // parse & validate
   const {
-    sub   = "",
-    sort  = "top",
-    t     = "all",
-    limit = "25",
-    q     = "",
+    sub    = "",
+    sort   = "top",
+    t      = "all",
+    limit  = "25",
+    q      = "",
   } = event.queryStringParameters || {};
 
   if (!sub.trim() || !q.trim()) {
@@ -59,20 +58,23 @@ exports.handler = async function(event) {
     };
   }
 
+  // if there's a query string, default to Reddit's relevance sort
+  const effectiveSort = q.trim() ? "relevance" : sort;
+
   try {
     const token = await getOAuthToken();
 
-    // 3) build the correct URL
-  const redditUrl =
-  `https://oauth.reddit.com/r/${encodeURIComponent(sub)}/search.json` +   // ← note the “.json”
-  `?q=${encodeURIComponent(q)}` +
-  `&restrict_sr=1` +
-  `&sort=${encodeURIComponent(sort)}` +
-  `&t=${encodeURIComponent(t)}` +
-  `&limit=${encodeURIComponent(limit)}` +
-  `&raw_json=1`;
+    // build the URL (note the “.json”)
+    const redditUrl =
+      `https://oauth.reddit.com/r/${encodeURIComponent(sub)}/search.json` +
+      `?q=${encodeURIComponent(q)}` +
+      `&restrict_sr=1` +
+      `&sort=${encodeURIComponent(effectiveSort)}` +
+      `&t=${encodeURIComponent(t)}` +
+      `&limit=${encodeURIComponent(limit)}` +
+      `&raw_json=1`;
 
-    // 4) fetch from Reddit
+    // fetch from Reddit
     const res = await fetch(redditUrl, {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -85,7 +87,7 @@ exports.handler = async function(event) {
       return {
         statusCode: res.status,
         headers: { "Access-Control-Allow-Origin": "*" },
-        body: JSON.stringify({ error: text.slice(0, 200) }),
+        body: JSON.stringify({ error: text.slice(0,200) }),
       };
     }
 
