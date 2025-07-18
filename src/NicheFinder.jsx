@@ -7,7 +7,7 @@ import { starterSubreddits } from "./data/starterSubreddits";
 import Footer from "./Footer";
 
 // ── Constants ───────────────────────────────────────────────────────────
-const SUGGESTION_PAGE_SIZE = 6 * 2; // two rows of 6 each
+const SUGGESTION_PAGE_SIZE = 12;  // two rows of 6 each
 const POSTS_PER_PAGE = 10;
 
 // ── Springy Toggle ───────────────────────────────────────────────────────
@@ -46,30 +46,22 @@ export default function NicheFinder() {
   // ── Fetch Subreddits ───────────────────────────────────────────────────
   const fetchSubreddits = useCallback(async (q) => {
     if (!q.trim()) {
-      console.log("[fetchSubreddits] empty query, clearing suggestions");
       setSuggestedSubs([]);
       return;
     }
     try {
-      console.log(`[fetchSubreddits] querying '${q}'…`);
       const res = await fetch(
         `/.netlify/functions/search-subs?q=${encodeURIComponent(q)}&limit=100`
       );
-      const json = await res.json();
-      console.log("[fetchSubreddits] raw response:", json);
-
-      const { data } = json;
-      const children = Array.isArray(data?.children) ? data.children : [];
-      console.log(`[fetchSubreddits] children count: ${children.length}`);
-
-      const subs = children
-        .map((c) => ({ name: c.data.display_name, over18: c.data.over18 }))
-        .filter((s) => !s.over18);
-      console.log("[fetchSubreddits] mapped & filtered subs:", subs);
-
-      setSuggestedSubs(subs);
-    } catch (err) {
-      console.error("[fetchSubreddits] error:", err);
+      const { data } = await res.json();
+      // DEV: to debug empty suggestions
+      // if (process.env.NODE_ENV !== "production") console.log("subs:", data.children.length);
+      setSuggestedSubs(
+        data.children
+          .map((c) => ({ name: c.data.display_name, over18: c.data.over18 }))
+          .filter((s) => !s.over18)
+      );
+    } catch {
       setSuggestedSubs([]);
     }
   }, []);
@@ -80,7 +72,6 @@ export default function NicheFinder() {
   }, [topic, fetchSubreddits]);
 
   useEffect(() => {
-    console.log("[suggestedSubs] updated:", suggestedSubs);
     setSuggestionPage(0);
   }, [suggestedSubs]);
 
@@ -105,17 +96,15 @@ export default function NicheFinder() {
         `sub=${encodeURIComponent(sub)}` +
         `&sort=${encodeURIComponent(sort)}` +
         `&q=${encodeURIComponent(q)}` +
-        `&t=all` +
-        `&limit=50`;
-      console.log("🔗 fetchFor URL:", url);
+        `&t=all&limit=50`;
       const res = await fetch(url);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const { data } = await res.json();
       return data.children.map((c) => ({
         subreddit: c.data.subreddit.toLowerCase(),
-        title: c.data.title,
-        score: c.data.score,
-        url: `https://reddit.com${c.data.permalink}`,
+        title:     c.data.title,
+        score:     c.data.score,
+        url:       `https://reddit.com${c.data.permalink}`,
       }));
     } catch {
       return [];
@@ -128,13 +117,12 @@ export default function NicheFinder() {
     setLoadingPosts(true);
 
     const subs = useSuggestedSubs
-      ? Array.from(
-          new Set([
-            ...trackedSubs,
-            ...starterSubreddits.map((s) => s.toLowerCase()),
-          ])
-        )
+      ? Array.from(new Set([
+          ...trackedSubs,
+          ...starterSubreddits.map((s) => s.toLowerCase()),
+        ]))
       : trackedSubs;
+
     if (!subs.length) {
       setRawPosts([]);
       setLoadingPosts(false);
@@ -143,12 +131,12 @@ export default function NicheFinder() {
 
     try {
       let all = [];
+
       if (patternChoice === "all") {
         for (let txt of phrasePatterns) {
           let matches = [];
           for (let sub of subs) {
-            const posts = await fetchFor(sub, selectedSorts[0], txt);
-            matches.push(...posts);
+            matches.push(...(await fetchFor(sub, selectedSorts[0], txt)));
           }
           const unique = Array.from(
             new Map(matches.map((p) => [p.url, p])).values()
@@ -158,11 +146,11 @@ export default function NicheFinder() {
       } else {
         for (let sub of subs) {
           for (let sort of selectedSorts) {
-            const posts = await fetchFor(sub, sort, keyword);
-            all.push(...posts);
+            all.push(...(await fetchFor(sub, sort, keyword)));
           }
         }
       }
+
       const seen = new Map();
       all.forEach((p) => seen.set(p.url, p));
       setRawPosts(Array.from(seen.values()));
@@ -181,7 +169,7 @@ export default function NicheFinder() {
     patternChoice,
   ]);
 
-  // ── Filter, Sort & Reset posts ───────────────────────────────────────
+  // ── Filter & paginate ─────────────────────────────────────────────────
   useEffect(() => {
     const kw = keyword.trim().toLowerCase();
     let posts = [];
@@ -194,9 +182,7 @@ export default function NicheFinder() {
       phrasePatterns.forEach((txt) => {
         const regex = new RegExp(`\\b${txt.replace(/ /g, "\\s+")}\\b`, "i");
         let matches = rawPosts.filter((p) => regex.test(p.title));
-        if (kw) matches = matches.filter((p) =>
-          p.title.toLowerCase().includes(kw)
-        );
+        if (kw) matches = matches.filter((p) => p.title.toLowerCase().includes(kw));
         posts.push(...matches.slice(0, 3));
       });
     }
@@ -205,7 +191,6 @@ export default function NicheFinder() {
     setResultPage(0);
   }, [rawPosts, keyword, patternChoice]);
 
-  // ── Suggestions pagination ────────────────────────────────────────────
   const untracked = suggestedSubs.filter(
     (s) => !trackedSubs.includes(s.name.toLowerCase())
   );
@@ -214,24 +199,15 @@ export default function NicheFinder() {
   );
   const visibleSuggestions = untracked.slice(
     suggestionPage * SUGGESTION_PAGE_SIZE,
-    suggestionPage * SUGGESTION_PAGE_SIZE + SUGGESTION_PAGE_SIZE
+    (suggestionPage + 1) * SUGGESTION_PAGE_SIZE
   );
 
-  useEffect(() => {
-    console.log(
-      `[visibleSuggestions] page ${suggestionPage + 1}/${suggestionPageCount}:`,
-      visibleSuggestions
-    );
-  }, [visibleSuggestions, suggestionPage, suggestionPageCount]);
-
-  // ── Results pagination ────────────────────────────────────────────────
   const resultPageCount = Math.ceil(filteredPosts.length / POSTS_PER_PAGE);
   const pageResults = filteredPosts.slice(
     resultPage * POSTS_PER_PAGE,
-    resultPage * POSTS_PER_PAGE + POSTS_PER_PAGE
+    (resultPage + 1) * POSTS_PER_PAGE
   );
 
-  // ── Reset everything ──────────────────────────────────────────────────
   const handleReset = () => {
     setTopic("");
     setSuggestedSubs([]);
@@ -255,23 +231,14 @@ export default function NicheFinder() {
           <div className="spinner" />
           {patternChoice === "all" && (
             <div className="loading-message">
-              Selecting “All patterns” will take a bit longer. Please be
-              patient…
+              Selecting “All patterns” will take a bit longer. Please be patient…
             </div>
           )}
         </div>
       )}
-      <div className="poc-banner">
-        <strong> MicroProblem Finder (Light Beta)</strong>
-        <br />
-        Proof-of-concept written by Eric T. Schmidt: React + Framer Motion
-        front-end • Netlify Functions back-end
-        <br />
-        2025-06-27 16:09:37 -0400 (first commit)
-      </div>
+
       <h1>MicroProblem Finder (Light Beta)</h1>
 
-      {/* Subreddit search */}
       <input
         value={topic}
         onChange={(e) => setTopic(e.target.value)}
@@ -279,7 +246,6 @@ export default function NicheFinder() {
         className="filter-input"
       />
 
-      {/* Suggestions */}
       {visibleSuggestions.length > 0 && (
         <LayoutGroup>
           <ul className="suggestions">
@@ -320,7 +286,6 @@ export default function NicheFinder() {
         </LayoutGroup>
       )}
 
-      {/* Tracked subs */}
       <div className="chips">
         <AnimatePresence>
           {trackedSubs.map((s) => (
@@ -328,10 +293,6 @@ export default function NicheFinder() {
               key={s}
               layoutId={`sub-${s}`}
               className="chip"
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              exit={{ scale: 0 }}
-              transition={{ type: "spring", stiffness: 500, damping: 30 }}
               onClick={() => removeSub(s)}
             >
               {s} ×
@@ -340,21 +301,22 @@ export default function NicheFinder() {
         </AnimatePresence>
       </div>
 
-      {/* Sort */}
       <div className="sorts">
-        {["hot", "new", "top"].map((type) => (
+        {[
+          "hot",
+          "new",
+          "top",
+        ].map((type) => (
           <motion.button
             key={type}
             className={selectedSorts.includes(type) ? "on" : ""}
             onClick={() => toggleSort(type)}
-            whileHover={{ scale: 1.1 }}
           >
             {type}
           </motion.button>
         ))}
       </div>
 
-      {/* Filters & Toggle */}
       <div className="filters">
         <input
           value={keyword}
@@ -369,7 +331,6 @@ export default function NicheFinder() {
         >
           <option value="none">No pattern</option>
           <option value="all">Most patterns</option>
-          <option disabled>All patterns</option>
         </select>
         <ToggleSwitch
           enabled={useSuggestedSubs}
@@ -378,84 +339,43 @@ export default function NicheFinder() {
         />
       </div>
 
-      {/* Actions */}
       <div className="actions">
-        <motion.button
-          onClick={handleSearch}
-          className="btn"
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-          disabled={trackedSubs.length === 0 && !useSuggestedSubs}
-        >
+        <motion.button onClick={handleSearch} className="btn">
           Search Posts
         </motion.button>
-        <motion.button
-          onClick={handleReset}
-          className="btn-secondary"
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.9 }}
-        >
+        <motion.button onClick={handleReset} className="btn-secondary">
           Reset
         </motion.button>
       </div>
 
       {error && <div className="error-message">{error}</div>}
 
-      {/* Results */}
       <div className="results-section">
-        {!loadingPosts && (
-          <>
-            <motion.ul
-              className="results"
-              initial="hidden"
-              animate="visible"
-              variants={{ visible: { transition: { staggerChildren: 0.1 } } }}
-            >
-              {pageResults.map((p) => (
-                <motion.li
-                  key={p.url}
-                  className="card"
-                  variants={{
-                    hidden: { opacity: 0, x: -20 },
-                    visible: { opacity: 1, x: 0 },
-                  }}
-                >
-                  <a href={p.url} target="_blank" rel="noopener noreferrer">
-                    {p.title}
-                  </a>
-                  <motion.span
-                    key={`${p.url}-${p.score}`}
-                    className="score"
-                    initial={{ scale: 1 }}
-                    animate={{ scale: [1, 1.5, 1] }}
-                    transition={{ duration: 0.6, ease: "easeInOut" }}
-                    whileHover={{ scale: 1.2 }}
-                  >
-                    🔥 {p.score}
-                  </motion.span>
-                </motion.li>
-              ))}
-            </motion.ul>
-            <div className="pagination">
-              <button
-                disabled={resultPage === 0}
-                onClick={() => setResultPage((p) => p - 1)}
-              >
-                Prev
-              </button>
-              <span>
-                Page {resultPage + 1} of {resultPageCount || 1}
-              </span>
-              <button
-                disabled={resultPage + 1 >= resultPageCount}
-                onClick={() => setResultPage((p) => p + 1)}
-              >
-                Next
-              </button>
-            </div>
-          </>
-        )}
+        <motion.ul className="results">
+          {pageResults.map((p) => (
+            <motion.li key={p.url} className="card">
+              <a href={p.url} target="_blank" rel="noopener noreferrer">
+                {p.title}
+              </a>
+              <motion.span className="score">
+                🔥 {p.score}
+              </motion.span>
+            </motion.li>
+          ))}
+        </motion.ul>
+        <div className="pagination">
+          <button disabled={resultPage === 0} onClick={() => setResultPage((p) => p - 1)}>
+            Prev
+          </button>
+          <span>
+            Page {resultPage + 1} of {resultPageCount || 1}
+          </span>
+          <button disabled={resultPage + 1 >= resultPageCount} onClick={() => setResultPage((p) => p + 1)}>
+            Next
+          </button>
+        </div>
       </div>
+
       <Footer />
     </div>
   );
