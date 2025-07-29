@@ -39,5 +39,23 @@
       To begin the development, run `npm start` or `yarn start`.
       To create a production bundle, use `npm run build` or `yarn build`.
     -->
+        <!-- public/index.html -->
+  …
+  <div id="root"></div>
+
+  <!-- Ko-fi floating chat widget -->
+  <script src="https://storage.ko-fi.com/cdn/scripts/overlay-widget.js"></script>
+  <script>
+    // once the library is loaded, call draw()
+    kofiWidgetOverlay.draw('lordtownsend', {
+      type: 'floating-chat',
+      'floating-chat.donateButton.text': 'Tip Me',
+      'floating-chat.donateButton.background-color': '#00b9fe',
+      'floating-chat.donateButton.text-color': '#fff'
+    });
+  </script>
+</body>
+</html>
+
   </body>
 </html>

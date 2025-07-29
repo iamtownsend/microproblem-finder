@@ -344,7 +344,8 @@ export default function NicheFinder() {
           <button disabled={resultPage + 1 >= resultPageCount} onClick={() => setResultPage(p => p + 1)}>Next</button>
         </div>
       </div>
-
+<script src='https://storage.ko-fi.com/cdn/scripts/overlay-widget.js'></script>
+  
       <Footer />
     </div>
   );
